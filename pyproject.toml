@@ -16,27 +16,18 @@ authors = [
 [tool.black]
 line-length = 88
 target-version = ["py311"]
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
 
-# isort configuration (compatible with black)
-[tool.isort]
-profile = "black"
-line_length = 88
-multi_line_output = 3
-include_trailing_comma = true
-skip_gitignore = true
+# Ruff configuration
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E203", "E266", "E501", "W503"]
+
+[tool.ruff.format]
+# Uses black style by default
 
 # Mypy configuration
 [tool.mypy]
@@ -91,10 +82,3 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "@abstractmethod",
 ]
-
-# Flake8 configuration (in setup.cfg format for compatibility)
-[tool.flake8]
-max-line-length = 88
-extend-ignore = ["E203", "E266", "E501", "W503"]
-exclude = [".git", "__pycache__", "build", "dist", ".eggs", "*.egg"]
-max-complexity = 10

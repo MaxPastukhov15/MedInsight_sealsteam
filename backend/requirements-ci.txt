@@ -24,8 +24,7 @@ pytest
 pytest-asyncio
 pytest-cov
 black
+ruff
 mypy
-isort
-flake8
 pre-commit
 types-redis
