@@ -20,33 +20,35 @@ jobs:
           echo "Railway CLI or API integration needed"
           # Example: railway up --service backend
 
-  deploy-frontend:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install frontend dependencies
-        run: |
-          cd frontend
-          npm ci
-
-      - name: Build frontend
-        run: |
-          cd frontend
-          npm run build
-
-      - name: Deploy to Vercel (Frontend)
-        run: |
-          echo "Frontend deployment would happen here"
-          echo "Vercel CLI integration needed"
-          # Example: vercel deploy --prod
+  # Frontend deployment disabled until frontend is implemented
+  # Uncomment when frontend/ directory is ready
+  # deploy-frontend:
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '18'
+  #         cache: 'npm'
+  #         cache-dependency-path: frontend/package-lock.json
+  #
+  #     - name: Install frontend dependencies
+  #       run: |
+  #         cd frontend
+  #         npm ci
+  #
+  #     - name: Build frontend
+  #       run: |
+  #         cd frontend
+  #         npm run build
+  #
+  #     - name: Deploy to Vercel (Frontend)
+  #       run: |
+  #         echo "Frontend deployment would happen here"
+  #         echo "Vercel CLI integration needed"
+  #         # Example: vercel deploy --prod
