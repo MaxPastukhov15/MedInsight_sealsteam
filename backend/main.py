@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 
 from config.settings import settings
 from monitoring.logging_config import setup_logging, logger
+from api.routes import router as api_router
 
 # Setup structured logging
 setup_logging()
@@ -47,6 +48,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include API routes
+app.include_router(api_router)
+
 
 @app.get("/")
 async def root() -> JSONResponse:
@@ -56,20 +60,8 @@ async def root() -> JSONResponse:
             "message": "Medical Analytics AI-Agent API",
             "version": "1.0.0",
             "status": "operational",
-        }
-    )
-
-
-@app.get("/health")
-async def health_check() -> JSONResponse:
-    """Health check endpoint."""
-    # TODO: Add actual health checks for DB, Redis, LLM
-    return JSONResponse(
-        content={
-            "status": "healthy",
-            "database": "ok",
-            "redis": "ok",
-            "llm": "ok",
+            "docs": "/docs",
+            "api": "/api/v1",
         }
     )
 
