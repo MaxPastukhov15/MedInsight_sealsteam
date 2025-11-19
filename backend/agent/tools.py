@@ -12,14 +12,14 @@
     result = await agent_tools.analyze_disease("грипп")
 """
 
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
+from monitoring.logging_config import logger
 from scenarios.scenario_1_disease_analysis import DiseaseAnalysisScenario
 from scenarios.scenario_2_trend_analysis import TrendAnalysisScenario
 from scenarios.scenario_3_forecast import ForecastScenario
 from scenarios.scenario_4_recommendations import RecommendationsScenario
 from scenarios.scenario_5_pattern_detection import PatternDetectionScenario
-from monitoring.logging_config import logger
 
 
 class AgentTools:

@@ -1,8 +1,8 @@
 """Cache management utilities."""
 
 import hashlib
-from typing import Optional, Any, Callable
 from functools import wraps
+from typing import Any, Callable, Optional
 
 from cache.redis_client import cache
 from config.cache_config import CACHE_TTL_REALTIME
@@ -26,9 +26,7 @@ def generate_cache_key(prefix: str, *args: Any, **kwargs: Any) -> str:
     return hashlib.md5(key_string.encode()).hexdigest()
 
 
-def cache_result(
-    prefix: str, ttl: int = CACHE_TTL_REALTIME
-) -> Callable:
+def cache_result(prefix: str, ttl: int = CACHE_TTL_REALTIME) -> Callable:
     """Decorator to cache function results.
 
     Args:
@@ -38,6 +36,7 @@ def cache_result(
     Returns:
         Decorated function
     """
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> Any:

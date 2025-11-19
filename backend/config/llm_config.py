@@ -1,6 +1,6 @@
 """LLM provider configuration."""
 
-from typing import Dict, Any
+from typing import Any, Dict
 
 # LLM parameters
 LLM_TEMPERATURE: float = 0.3

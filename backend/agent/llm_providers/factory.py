@@ -11,12 +11,12 @@
 from typing import Optional
 
 from agent.llm_providers.base import BaseLLMProvider
-from agent.llm_providers.ollama_provider import OllamaProvider
-from agent.llm_providers.together_provider import TogetherProvider
-from agent.llm_providers.openai_provider import OpenAIProvider
 from agent.llm_providers.cohere_provider import CohereProvider
-from config.settings import settings
+from agent.llm_providers.ollama_provider import OllamaProvider
+from agent.llm_providers.openai_provider import OpenAIProvider
+from agent.llm_providers.together_provider import TogetherProvider
 from config.llm_config import MODEL_NAMES, PROVIDER_CONFIGS
+from config.settings import settings
 from monitoring.logging_config import logger
 
 

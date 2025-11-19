@@ -1,11 +1,11 @@
 """Scenario 5: Pattern Detection."""
 
-from typing import Dict, Any, List
-import numpy as np
-from scipy import stats
+from typing import Any, Dict, List
 
-from scenarios.base import Scenario
+import numpy as np
 from monitoring.logging_config import logger
+from scenarios.base import Scenario
+from scipy import stats
 
 
 class PatternDetectionScenario(Scenario):
@@ -123,9 +123,7 @@ class PatternDetectionScenario(Scenario):
             "weekly_pattern": [float(x) for x in weekly_pattern],
         }
 
-    async def execute(
-        self, params: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def execute(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Execute pattern detection.
 
         Args:

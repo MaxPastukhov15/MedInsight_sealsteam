@@ -26,7 +26,7 @@ async def test_analyze_disease_tool() -> None:
         region="Санкт-Петербург",
         days=7,
     )
-    
+
     assert result is not None
     assert "current_cases" in result
 
@@ -38,7 +38,7 @@ async def test_get_trends_tool() -> None:
         disease_name="грипп",
         days=14,
     )
-    
+
     assert result is not None
     assert "trend_direction" in result
 

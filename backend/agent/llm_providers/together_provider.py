@@ -1,8 +1,8 @@
 """Together AI provider."""
 
-from typing import Optional, Any, AsyncIterator
-import httpx
+from typing import Any, AsyncIterator, Optional
 
+import httpx
 from agent.llm_providers.base import BaseLLMProvider
 from config.settings import settings
 from monitoring.logging_config import logger
@@ -116,6 +116,7 @@ class TogetherProvider(BaseLLMProvider):
                         data = line[6:]
                         if data != "[DONE]":
                             import json
+
                             chunk = json.loads(data)
                             if "choices" in chunk and chunk["choices"]:
                                 delta = chunk["choices"][0].get("delta", {})

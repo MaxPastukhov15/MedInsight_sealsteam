@@ -1,9 +1,6 @@
 """API routes for the application."""
 
-from typing import Dict, Any
-
-from fastapi import APIRouter, HTTPException, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any, Dict
 
 from database.connection import get_db
 from database.schemas import (
@@ -15,7 +12,9 @@ from database.schemas import (
     ForecastResponse,
     HealthCheckResponse,
 )
+from fastapi import APIRouter, Depends, HTTPException
 from monitoring.logging_config import logger
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/api/v1", tags=["api"])
 

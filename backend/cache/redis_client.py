@@ -1,12 +1,11 @@
 """Redis client for caching."""
 
-from typing import Optional, Any
 import json
-
-from redis.asyncio import Redis
+from typing import Any, Optional
 
 from config.settings import settings
 from monitoring.logging_config import logger
+from redis.asyncio import Redis
 
 
 class RedisCache:
@@ -57,9 +56,7 @@ class RedisCache:
             logger.error("redis_get_failed", key=key, error=str(e))
             return None
 
-    async def set(
-        self, key: str, value: Any, ttl: Optional[int] = None
-    ) -> bool:
+    async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
         """Set value in cache.
 
         Args:

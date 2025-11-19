@@ -6,8 +6,8 @@
 - LLM provider
 """
 
-from typing import Dict, Any
 import asyncio
+from typing import Any, Dict
 
 from cache.redis_client import cache
 from monitoring.logging_config import logger
@@ -43,6 +43,7 @@ class HealthChecker:
         """Check LLM provider health."""
         try:
             from config.settings import settings
+
             if settings.LLM_PROVIDER:
                 return {
                     "status": "healthy",
@@ -63,8 +64,7 @@ class HealthChecker:
         )
 
         all_healthy = all(
-            h["status"] == "healthy"
-            for h in [db_health, redis_health, llm_health]
+            h["status"] == "healthy" for h in [db_health, redis_health, llm_health]
         )
 
         return {

@@ -1,10 +1,10 @@
 """Scenario 4: Recommendations using RAG."""
 
-from typing import Dict, Any
+from typing import Any, Dict
 
-from scenarios.base import Scenario
-from rag.rag_pipeline import rag_pipeline
 from monitoring.logging_config import logger
+from rag.rag_pipeline import rag_pipeline
+from scenarios.base import Scenario
 
 
 class RecommendationsScenario(Scenario):
@@ -25,9 +25,7 @@ class RecommendationsScenario(Scenario):
         """
         return "disease_name" in params or "query" in params
 
-    async def execute(
-        self, params: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def execute(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Execute recommendations generation.
 
         Args:

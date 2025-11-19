@@ -1,10 +1,10 @@
 """Knowledge base management for medical protocols."""
 
-from typing import List, Dict, Any
 from pathlib import Path
+from typing import Any, Dict, List
 
-from rag.vector_db import vector_db
 from monitoring.logging_config import logger
+from rag.vector_db import vector_db
 
 
 class KnowledgeBase:
@@ -41,10 +41,12 @@ class KnowledgeBase:
             with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
                 documents.append(content)
-                metadatas.append({
-                    "filename": file_path.name,
-                    "type": "protocol",
-                })
+                metadatas.append(
+                    {
+                        "filename": file_path.name,
+                        "type": "protocol",
+                    }
+                )
                 ids.append(f"protocol_{idx}")
 
         if documents:
@@ -80,11 +82,21 @@ class KnowledgeBase:
         formatted_results = []
         if results.get("documents"):
             for idx, doc in enumerate(results["documents"][0]):
-                formatted_results.append({
-                    "content": doc,
-                    "metadata": results["metadatas"][0][idx] if results.get("metadatas") else {},
-                    "distance": results["distances"][0][idx] if results.get("distances") else 0,
-                })
+                formatted_results.append(
+                    {
+                        "content": doc,
+                        "metadata": (
+                            results["metadatas"][0][idx]
+                            if results.get("metadatas")
+                            else {}
+                        ),
+                        "distance": (
+                            results["distances"][0][idx]
+                            if results.get("distances")
+                            else 0
+                        ),
+                    }
+                )
 
         logger.info(
             "knowledge_base_search",

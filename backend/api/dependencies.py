@@ -7,12 +7,12 @@ FastAPI Dependency Injection:
 """
 
 from typing import AsyncGenerator
-from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.connection import get_db
 from agent.tools import agent_tools
 from cache.redis_client import cache
+from database.connection import get_db
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def get_tools():

@@ -12,10 +12,10 @@ def test_generate_cache_key() -> None:
     key1 = generate_cache_key("test", "arg1", "arg2", param1="value1")
     key2 = generate_cache_key("test", "arg1", "arg2", param1="value1")
     key3 = generate_cache_key("test", "arg1", "arg2", param1="value2")
-    
+
     # Same params should generate same key
     assert key1 == key2
-    
+
     # Different params should generate different keys
     assert key1 != key3
 
@@ -25,12 +25,12 @@ def test_generate_cache_key() -> None:
 # async def test_redis_get_set() -> None:
 #     """Test Redis get/set operations."""
 #     from cache.redis_client import cache
-#     
+#
 #     await cache.connect()
 #     await cache.set("test_key", "test_value", ttl=60)
 #     value = await cache.get("test_key")
-#     
+#
 #     assert value == "test_value"
-#     
+#
 #     await cache.delete("test_key")
 #     await cache.disconnect()

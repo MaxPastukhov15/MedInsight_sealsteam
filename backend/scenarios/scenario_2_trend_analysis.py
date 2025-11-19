@@ -1,11 +1,11 @@
 """Scenario 2: Trend Analysis."""
 
-from typing import Dict, Any, List
-import numpy as np
-from scipy import stats
+from typing import Any, Dict, List
 
-from scenarios.base import Scenario
+import numpy as np
 from monitoring.logging_config import logger
+from scenarios.base import Scenario
+from scipy import stats
 
 
 class TrendAnalysisScenario(Scenario):
@@ -27,9 +27,7 @@ class TrendAnalysisScenario(Scenario):
         required = ["disease_name"]
         return all(key in params for key in required)
 
-    async def execute(
-        self, params: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def execute(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Execute trend analysis.
 
         Args:

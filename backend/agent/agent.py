@@ -8,7 +8,7 @@
 3. Edges - связи между узлами
 
 ReAct Pattern:
-    User Query → Agent (Reasoning) → Tool Selection → Tool Execution → 
+    User Query → Agent (Reasoning) → Tool Selection → Tool Execution →
     → Agent (Acting) → Response Generation
 
 TODO: Реализовать:
@@ -20,17 +20,17 @@ TODO: Реализовать:
 - invoke() - запуск агента
 """
 
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
-from agent.tools import agent_tools
 from agent.llm_providers.factory import get_llm_provider
 from agent.prompts import SYSTEM_PROMPT
+from agent.tools import agent_tools
 from monitoring.logging_config import logger
 
 
 class MedicalAgent:
     """Medical analytics AI agent.
-    
+
     Этот агент обрабатывает запросы пользователя,
     вызывает нужные инструменты и генерирует ответы.
     """
@@ -47,23 +47,23 @@ class MedicalAgent:
         chat_history: List[Dict[str, str]] = None,
     ) -> Dict[str, Any]:
         """Process user message.
-        
+
         Args:
             message: User message
             chat_history: Previous messages
-            
+
         Returns:
             Agent response with visualizations
         """
         logger.info("processing_message", message_length=len(message))
-        
+
         # TODO: Implement LangGraph logic here
         # 1. Create State with message and history
         # 2. Run agent graph
         # 3. Collect tool calls and results
         # 4. Generate final response with LLM
         # 5. Return response + visualizations + metadata
-        
+
         # Temporary mock response
         return {
             "response": "TODO: Implement LangGraph agent logic",

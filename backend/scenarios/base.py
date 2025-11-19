@@ -1,7 +1,7 @@
 """Base class for all analytical scenarios."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 from monitoring.logging_config import logger
 
@@ -19,9 +19,7 @@ class Scenario(ABC):
         logger.info("scenario_initialized", name=name)
 
     @abstractmethod
-    async def execute(
-        self, params: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def execute(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Execute scenario logic.
 
         Args:
@@ -44,9 +42,7 @@ class Scenario(ABC):
         # Default implementation - override in subclasses
         return True
 
-    async def run(
-        self, params: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def run(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Run scenario with validation.
 
         Args:

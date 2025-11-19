@@ -1,12 +1,13 @@
 """Text embeddings for RAG."""
 
 from typing import List
+
 import numpy as np
+from monitoring.logging_config import logger
 
 # TODO: Install sentence-transformers
 # from sentence_transformers import SentenceTransformer
 
-from monitoring.logging_config import logger
 
 
 class EmbeddingModel:

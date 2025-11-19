@@ -3,13 +3,12 @@
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
+from api.routes import router as api_router
+from config.settings import settings
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
-from config.settings import settings
-from monitoring.logging_config import setup_logging, logger
-from api.routes import router as api_router
+from monitoring.logging_config import logger, setup_logging
 
 # Setup structured logging
 setup_logging()

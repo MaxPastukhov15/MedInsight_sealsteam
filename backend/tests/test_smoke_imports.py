@@ -5,37 +5,37 @@
 Можно запускать при любом изменении requirements.txt, пригодится для CI и локальной проверки.
 """
 
+
 def test_imports_smoke():
-    import fastapi
-    import uvicorn
-    import sqlalchemy
     import asyncpg
+    import black
+    import chromadb
+    import cmdstanpy
+    import fastapi
+    import flake8
+    import hiredis
+    import hnswlib
+    import httpx
+    import isort
     import langchain
     import langgraph
-    import chromadb
-    import sentence_transformers
-    import hnswlib
-    import pandas
-    import numpy
-    import scipy
-    import sklearn
-    import statsmodels
-    import plotly
-    import prometheus_client
-    import structlog
-    import httpx
-    import pytest
+    import matplotlib
     import mypy
-    import black
-    import isort
-    import flake8
+    import numpy
+    import pandas
+    import plotly
     import pre_commit
-    import pythonjsonlogger
     import prometheus_client
+    import prophet
     import pydantic
     import pydantic_settings
-    import cmdstanpy
-    import matplotlib
-    import prophet
+    import pytest
+    import pythonjsonlogger
     import redis
-    import hiredis
+    import scipy
+    import sentence_transformers
+    import sklearn
+    import sqlalchemy
+    import statsmodels
+    import structlog
+    import uvicorn

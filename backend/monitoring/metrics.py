@@ -7,8 +7,9 @@
 - БД запросы
 """
 
-from prometheus_client import Counter, Histogram, Gauge
-from typing import Dict, Any
+from typing import Any, Dict
+
+from prometheus_client import Counter, Gauge, Histogram
 
 # API metrics
 request_count = Counter(
@@ -54,7 +55,9 @@ class MetricsCollector:
     """Helper for metrics collection."""
 
     @staticmethod
-    def record_request(method: str, endpoint: str, status: int, duration: float) -> None:
+    def record_request(
+        method: str, endpoint: str, status: int, duration: float
+    ) -> None:
         """Record API request."""
         request_count.labels(method=method, endpoint=endpoint, status=status).inc()
         request_duration.labels(method=method, endpoint=endpoint).observe(duration)

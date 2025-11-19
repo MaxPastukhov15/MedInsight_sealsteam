@@ -16,9 +16,9 @@ async def test_disease_analysis_scenario() -> None:
     """Test disease analysis scenario."""
     scenario = DiseaseAnalysisScenario()
     params = {"disease_name": "грипп", "region": "Санкт-Петербург", "days": 7}
-    
+
     result = await scenario.run(params)
-    
+
     assert "current_cases" in result
     assert "deaths" in result
     assert "mortality_rate" in result
@@ -31,9 +31,9 @@ async def test_trend_analysis_scenario() -> None:
     """Test trend analysis scenario."""
     scenario = TrendAnalysisScenario()
     params = {"disease_name": "грипп", "days": 14}
-    
+
     result = await scenario.run(params)
-    
+
     assert "trend_direction" in result
     assert "slope" in result
     assert "r_squared" in result
@@ -45,9 +45,9 @@ async def test_forecast_scenario() -> None:
     """Test forecast scenario."""
     scenario = ForecastScenario()
     params = {"disease_name": "грипп", "forecast_days": 14}
-    
+
     result = await scenario.run(params)
-    
+
     assert "predictions" in result
     assert "confidence_lower" in result
     assert "confidence_upper" in result
@@ -60,9 +60,9 @@ async def test_recommendations_scenario() -> None:
     """Test recommendations scenario."""
     scenario = RecommendationsScenario()
     params = {"disease_name": "грипп", "query": "лечение"}
-    
+
     result = await scenario.run(params)
-    
+
     assert "recommendations" in result
 
 
@@ -74,8 +74,8 @@ async def test_pattern_detection_scenario() -> None:
         "disease_name": "грипп",
         "pattern_type": "anomalies",
     }
-    
+
     result = await scenario.run(params)
-    
+
     assert "pattern_type" in result
     assert result["pattern_type"] == "anomalies"

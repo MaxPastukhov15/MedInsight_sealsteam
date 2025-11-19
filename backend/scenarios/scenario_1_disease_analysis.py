@@ -1,10 +1,10 @@
 """Scenario 1: Disease Analysis."""
 
-from typing import Dict, Any
 from datetime import datetime, timedelta
+from typing import Any, Dict
 
-from scenarios.base import Scenario
 from monitoring.logging_config import logger
+from scenarios.base import Scenario
 
 
 class DiseaseAnalysisScenario(Scenario):
@@ -26,9 +26,7 @@ class DiseaseAnalysisScenario(Scenario):
         required = ["disease_name"]
         return all(key in params for key in required)
 
-    async def execute(
-        self, params: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def execute(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Execute disease analysis.
 
         Args:

@@ -5,10 +5,9 @@ from typing import AsyncGenerator, Generator
 
 import pytest
 from fastapi.testclient import TestClient
+from main import app
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-
-from main import app
 
 # Test database URL
 TEST_DATABASE_URL = "postgresql+asyncpg://testuser:testpass@localhost:5432/testdb"
@@ -32,9 +31,7 @@ def client() -> TestClient:
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
     """Create test database session."""
     engine = create_async_engine(TEST_DATABASE_URL, echo=True)
-    async_session = sessionmaker(
-        engine, class_=AsyncSession, expire_on_commit=False
-    )
+    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     async with async_session() as session:
         yield session

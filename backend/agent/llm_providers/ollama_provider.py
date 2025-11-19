@@ -1,8 +1,8 @@
 """Ollama LLM provider."""
 
-from typing import Optional, Any, AsyncIterator
-import httpx
+from typing import Any, AsyncIterator, Optional
 
+import httpx
 from agent.llm_providers.base import BaseLLMProvider
 from config.settings import settings
 from monitoring.logging_config import logger
@@ -118,6 +118,7 @@ class OllamaProvider(BaseLLMProvider):
                 async for line in response.aiter_lines():
                     if line:
                         import json
+
                         chunk = json.loads(line)
                         if "response" in chunk:
                             yield chunk["response"]

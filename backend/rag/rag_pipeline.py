@@ -1,9 +1,9 @@
 """RAG (Retrieval Augmented Generation) pipeline."""
 
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
-from rag.knowledge_base import knowledge_base
 from monitoring.logging_config import logger
+from rag.knowledge_base import knowledge_base
 
 
 class RAGPipeline:
@@ -43,9 +43,7 @@ class RAGPipeline:
 
         context_parts = []
         for idx, doc in enumerate(documents, 1):
-            context_parts.append(
-                f"Документ {idx}:\n{doc['content']}\n"
-            )
+            context_parts.append(f"Документ {idx}:\n{doc['content']}\n")
 
         return "\n".join(context_parts)
 

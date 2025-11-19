@@ -1,10 +1,10 @@
 """OpenAI provider."""
 
-from typing import Optional, Any, AsyncIterator
-from langchain_openai import ChatOpenAI
+from typing import Any, AsyncIterator, Optional
 
 from agent.llm_providers.base import BaseLLMProvider
 from config.settings import settings
+from langchain_openai import ChatOpenAI
 from monitoring.logging_config import logger
 
 

@@ -1,9 +1,9 @@
 """Scenario 3: Forecasting."""
 
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
-from scenarios.base import Scenario
 from monitoring.logging_config import logger
+from scenarios.base import Scenario
 
 
 class ForecastScenario(Scenario):
@@ -25,9 +25,7 @@ class ForecastScenario(Scenario):
         required = ["disease_name"]
         return all(key in params for key in required)
 
-    async def execute(
-        self, params: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def execute(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Execute forecasting.
 
         Args:

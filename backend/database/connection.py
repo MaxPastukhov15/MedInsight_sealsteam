@@ -3,7 +3,7 @@
 Управление async SQLAlchemy connection pool.
 Использование:
     from database.connection import get_db
-    
+
     @app.get("/users")
     async def get_users(db: AsyncSession = Depends(get_db)):
         result = await db.execute(select(User))
@@ -11,8 +11,9 @@
 """
 
 from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+
 from config.settings import settings
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 # Create async engine
 engine = create_async_engine(
@@ -33,7 +34,7 @@ AsyncSessionLocal = async_sessionmaker(
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Dependency to get database session.
-    
+
     Yields:
         AsyncSession: Database session
     """
