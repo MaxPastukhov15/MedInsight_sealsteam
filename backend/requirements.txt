@@ -1,9 +1,8 @@
 fastapi==0.110.0
 uvicorn==0.29.0
 langchain==0.3.27
-langchain-core==0.3.79
-langchain-community==0.4.1
-langgraph==1.0.3
+langchain-core>=0.2.38
+langgraph>=0.6.0
 langchain-openai>=0.2.0
 sqlalchemy[asyncio]
 asyncpg
