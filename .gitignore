@@ -1,86 +1,36 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-PIPFILE.lock
+# .gitignore для dev-архитектуры
+# Игнорировать временные файлы, секреты, виртуальное окружение
 
-# Virtual Environment
-venv/
-env/
-ENV/
-env.bak/
-venv.bak/
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# IDEs
+# VS Code
 .vscode/
+
+# Python venv
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Секреты и env-файлы
+.env
+
+# IDE-файлы
 .idea/
 *.swp
 *.swo
 *~
+
+# Тестовые отчёты
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Мусор и дампы
+*.log
+*.tmp
+*.bak
+*.db
 .DS_Store
 
-# Testing
-.pytest_cache/
-.coverage
-.coverage.*
-htmlcov/
-.tox/
-.nox/
-
-# Mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Databases
-*.db
-*.sqlite
-*.sqlite3
-
-# Logs
-*.log
-logs/
-
-# Cache
-.cache/
-*.pyc
-
-# ChromaDB
-chroma_data/
-
-# Node (for frontend)
-node_modules/
-.npm
-.eslintcache
-
-# Build outputs
-dist/
-build/
-*.egg-info/
-
-# OS
-Thumbs.db
+# Pre-commit cache
+.pre-commit-framework/
