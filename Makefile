@@ -1,65 +1,32 @@
-.PHONY: install install-dev lint format test test-cov run clean help
+PYTHON_VERSION := 3.11
+VENV_NAME := .venv
 
-# Variables
-PYTHON := python3.11
-PIP := $(PYTHON) -m pip
-PYTEST := $(PYTHON) -m pytest
-BLACK := $(PYTHON) -m black
-ISORT := $(PYTHON) -m isort
-MYPY := $(PYTHON) -m mypy
-FLAKE8 := $(PYTHON) -m flake8
+.PHONY: install-dev clean-venv run lint test pre-commit-check
 
-help:
-	@echo "Available commands:"
-	@echo "  make install      - Install production dependencies"
-	@echo "  make install-dev  - Install development dependencies"
-	@echo "  make lint         - Run all linters (mypy, flake8, black check, isort check)"
-	@echo "  make format       - Format code with black and isort"
-	@echo "  make test         - Run tests"
-	@echo "  make test-cov     - Run tests with coverage report"
-	@echo "  make run          - Run development server"
-	@echo "  make clean        - Clean cache and build artifacts"
+install-dev:
+	@if ! command -v python$(PYTHON_VERSION) &>/dev/null; then \
+		echo "ERROR: Требуется Python $(PYTHON_VERSION)! Установи через pyenv или пакетный менеджер."; exit 1; \
+	fi
+	@if [ -d $(VENV_NAME) ]; then rm -rf $(VENV_NAME); fi
+	python$(PYTHON_VERSION) -m venv $(VENV_NAME)
+	. $(VENV_NAME)/bin/activate && pip install --upgrade pip
+	. $(VENV_NAME)/bin/activate && pip install -r backend/requirements.txt
+	. $(VENV_NAME)/bin/activate && pip install -r backend/requirements-ci.txt
+	@if [ ! -f .env ]; then cp .env.example .env; echo "Скопирован .env.example в .env"; fi
+	. $(VENV_NAME)/bin/activate && pre-commit install
+	@echo "✅ Всё готово: venv, зависимости, .env, pre-commit!"
 
-install:
-	$(PIP) install --upgrade pip
-	$(PIP) install -r backend/requirements.txt
-
-install-dev: install
-	$(PIP) install pytest pytest-asyncio pytest-cov mypy black isort flake8 pre-commit
-	pre-commit install
-
-lint:
-	@echo "Running mypy..."
-	$(MYPY) backend/ --config-file pyproject.toml
-	@echo "Running flake8..."
-	$(FLAKE8) backend/
-	@echo "Checking black formatting..."
-	$(BLACK) --check backend/
-	@echo "Checking isort..."
-	$(ISORT) --check-only backend/
-
-format:
-	@echo "Formatting with black..."
-	$(BLACK) backend/
-	@echo "Sorting imports with isort..."
-	$(ISORT) backend/
-
-test:
-	$(PYTEST) backend/tests/ -v
-
-test-cov:
-	$(PYTEST) backend/tests/ --cov=backend --cov-report=html --cov-report=term-missing
-	@echo "Coverage report generated in htmlcov/index.html"
+clean-venv:
+	rm -rf $(VENV_NAME)
 
 run:
-	cd backend && uvicorn main:app --reload --host 0.0.0.0 --port 8000
+	. $(VENV_NAME)/bin/activate && uvicorn backend.main:app --host 0.0.0.0 --port 8000
 
-clean:
-	@echo "Cleaning cache and build artifacts..."
-	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-	find . -type f -name "*.pyc" -delete
-	find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
-	find . -type d -name ".mypy_cache" -exec rm -rf {} + 2>/dev/null || true
-	find . -type d -name "htmlcov" -exec rm -rf {} + 2>/dev/null || true
-	find . -type f -name ".coverage" -delete
-	@echo "Clean complete!"
+lint:
+	. $(VENV_NAME)/bin/activate && pre-commit run --all-files
+
+test:
+	. $(VENV_NAME)/bin/activate && pytest
+
+pre-commit-check:
+	. $(VENV_NAME)/bin/activate && pre-commit run --all-files --show-diff-on-failure
