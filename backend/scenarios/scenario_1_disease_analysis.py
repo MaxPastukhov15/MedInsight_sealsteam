@@ -1,6 +1,6 @@
 """Scenario 1: Disease Analysis."""
 
-from datetime import datetime, timedelta
+# from datetime import datetime, timedelta  # F401: unused imports
 from typing import Any, Dict
 
 from monitoring.logging_config import logger

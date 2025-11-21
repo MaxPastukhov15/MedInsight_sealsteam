@@ -1,7 +1,7 @@
 """Base class for all analytical scenarios."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any, Dict  # , Optional  # F401: unused import
 
 from monitoring.logging_config import logger
 

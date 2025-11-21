@@ -12,7 +12,7 @@ from database.schemas import (
     ForecastResponse,
     HealthCheckResponse,
 )
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends  # , HTTPException  # F401: unused import
 from monitoring.logging_config import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 

@@ -7,9 +7,9 @@
 - БД запросы
 """
 
-from typing import Any, Dict
+# from typing import Any, Dict  # F401: unused imports
 
-from prometheus_client import Counter, Gauge, Histogram
+from prometheus_client import Counter, Histogram  # , Gauge  # F401: unused import
 
 # API metrics
 request_count = Counter(

@@ -1,6 +1,6 @@
 """Scenario 5: Pattern Detection."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict  # , List  # F401: unused import
 
 import numpy as np
 from monitoring.logging_config import logger

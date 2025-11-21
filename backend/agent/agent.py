@@ -23,7 +23,7 @@ TODO: Реализовать:
 from typing import Any, Dict, List
 
 from agent.llm_providers.factory import get_llm_provider
-from agent.prompts import SYSTEM_PROMPT
+# from agent.prompts import SYSTEM_PROMPT  # F401: unused import
 from agent.tools import agent_tools
 from monitoring.logging_config import logger
 

@@ -1,11 +1,12 @@
 """Scenario 2: Trend Analysis."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict  # , List  # F401: unused import
 
-import numpy as np
+# import numpy as np  # F401: unused import
 from monitoring.logging_config import logger
 from scenarios.base import Scenario
-from scipy import stats
+
+# from scipy import stats  # F401: unused import
 
 
 class TrendAnalysisScenario(Scenario):

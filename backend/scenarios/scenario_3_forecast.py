@@ -1,6 +1,6 @@
 """Scenario 3: Forecasting."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict  # , List  # F401: unused import
 
 from monitoring.logging_config import logger
 from scenarios.base import Scenario

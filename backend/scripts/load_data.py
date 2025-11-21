@@ -1,15 +1,28 @@
 #!/usr/bin/env python3
 """Скрипт загрузки CSV в PostgreSQL."""
+
+import argparse
+import logging
+import os
 import sys
 from pathlib import Path
+# from typing import List  # F401: unused import
+
 import pandas as pd
-from sqlalchemy import text
+from sqlalchemy import create_engine, text
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from backend.database.connection import engine
 from backend.database.models import Base
+
+# Настройка логирования
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
 def main():

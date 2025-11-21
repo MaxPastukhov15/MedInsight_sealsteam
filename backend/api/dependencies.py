@@ -6,13 +6,13 @@ FastAPI Dependency Injection:
 - get_cache: Redis cache
 """
 
-from typing import AsyncGenerator
+# from typing import AsyncGenerator  # F401: unused import
 
 from agent.tools import agent_tools
 from cache.redis_client import cache
 from database.connection import get_db
-from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+# from fastapi import Depends  # F401: unused import
+# from sqlalchemy.ext.asyncio import AsyncSession  # F401: unused import
 
 
 async def get_tools():
