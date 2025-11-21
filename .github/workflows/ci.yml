@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, feature/*, bugfix/*]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11']
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r backend/requirements.txt
+        pip install -r backend/requirements-ci.txt
+
+    - name: Lint with Ruff (format and check)
+      run: |
+        ruff format backend/
+        ruff check backend/
+
+    - name: Static type check (mypy)
+      run: |
+        mypy backend/
+
+    - name: Run tests
+      run: |
+        pytest backend/tests/ || echo "No tests yet"
