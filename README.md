@@ -1,119 +1,109 @@
-# Medical Analytics AI-Agent
+# Medical Analytics AI Agent
 
-> AI-агент для анализа медицинских данных с прогнозированием и рекомендациями
+🏥 **AI-агент для анализа медицинских данных**
 
-## Основные возможности
+FastAPI + LangChain агент, который отвечает на вопросы о медицинских данных через SQL.
 
-- 📊 **Анализ заболеваемости** - текущие показатели по регионам и возрастным группам
-- 📈 **Анализ трендов** - выявление роста/снижения заболеваемости
-- 🔮 **Прогнозирование** - Prophet + ARIMA ensemble на 14 дней
-- 💡 **Рекомендации** - RAG-протоколы + LLM генерация
-- 🔍 **Поиск паттернов** - аномалии, корреляции, сезонность
+## ✨ Возможности
 
-## Quick Start
+- 📈 **Анализ трендов** - сезонность заболеваний
+- 🗺️ **География** - распределение по районам
+- 🤖 **LLM агент** - генерирует SQL и отвечает на вопросы
+- 💡 **Простая архитектура** - работает сразу
 
-### Предварительные требования
+## 🚀 Быстрый старт
 
-- Python 3.11+
-- PostgreSQL 15+
-- Redis 7+
-- Node.js 18+ (для фронтенда)
-
-### Установка
+### 1. Установка
 
 ```bash
-# Клонировать репозиторий
+# Клонировать
 git clone https://github.com/Ronshin-Vsevolod/preparing.git
 cd preparing
 
-# Установить backend зависимости
+# Установить зависимости
 make install-dev
 
-# Скопировать .env.example
-cp backend/.env.example backend/.env
-# Отредактируйте backend/.env с вашими настройками
-
-# Запустить БД и Redis через Docker
-docker-compose up -d postgres redis
-
-# Запустить backend
-make run
+# Настроить .env
+cp .env.example .env
+nano .env  # Добавить DATABASE_URL и OPENAI_API_KEY
 ```
 
-### Тестирование
+### 2. База данных
 
 ```bash
-# Запустить все тесты
-make test
+# Создать PostgreSQL базу
+createbuser medical_analytics
+createdb -O medical_analytics medical_analytics
 
-# Запустить тесты с coverage
-make test-cov
+# Загрузить данные
+mkdir -p data/raw
+# Положите CSV файлы в data/raw/
 
-# Запустить linting
-make lint
-
-# Форматировать код
-make format
+source .venv/bin/activate
+python backend/scripts/load_data.py
 ```
 
-## Структура проекта
+### 3. Запуск
 
-```
-preparing/
-├── backend/              # FastAPI backend
-│   ├── config/           # Конфигурация
-│   ├── database/         # БД модели и подключение
-│   ├── cache/            # Redis кэширование
-│   ├── rag/              # RAG pipeline (ChromaDB + embeddings)
-│   ├── agent/            # LangGraph AI-агент
-│   ├── scenarios/        # 5 аналитических сценариев
-│   ├── api/              # FastAPI routes
-│   ├── monitoring/       # Логирование и метрики
-│   └── tests/            # Тесты
-├── frontend/             # React + TypeScript frontend
-├── docs/                 # Документация
-├── .github/              # GitHub Actions CI/CD
-└── infra/                # Docker, docker-compose
+```bash
+make run
+# Перейти на http://localhost:8000/docs
 ```
 
-## Технологии
+## 📚 Структура
 
-### Backend
-- **FastAPI** - REST API framework
-- **LangChain + LangGraph** - AI agent orchestration
-- **SQLAlchemy** - ORM for PostgreSQL
-- **ChromaDB** - Vector database for RAG
-- **Redis** - Caching
-- **Prophet + ARIMA** - Time series forecasting
-- **Structlog** - Structured logging
+```
+backend/
+├── core/
+│   └── config.py          # Настройки
+├── database/
+│   ├── connection.py      # SQLAlchemy
+│   └── models.py          # DiseaseCase модель
+├── api/
+│   ├── chat.py            # POST /api/chat
+│   └── visualize.py       # GET /api/trends, /api/geo
+├── agent/
+│   └── simple_agent.py    # LLM агент
+├── scripts/
+│   └── load_data.py       # Загрузка CSV
+└── main.py                # FastAPI app
+```
 
-### Frontend
-- **React 18** - UI framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool
-- **Plotly** - Interactive visualizations
+## 📡 API
 
-### DevOps
-- **Docker** - Containerization
-- **GitHub Actions** - CI/CD
-- **pytest** - Testing framework
-- **black, isort, mypy, flake8** - Code quality
+### Chat
+```bash
+curl -X POST http://localhost:8000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Сколько случаев гриппа?", "session_id": "test"}'
+```
 
-## Документация
+### Trends
+```bash
+curl "http://localhost:8000/api/trends?disease=грипп"
+```
 
-- [ARCHITECTURE.md](docs/ARCHITECTURE.md) - Техническая архитектура
-- [ALGORITHMS.md](docs/ALGORITHMS.md) - Математические алгоритмы
-- [SETUP.md](docs/SETUP.md) - Установка и запуск
-- [API_SPEC.md](docs/API_SPEC.md) - API спецификация
+### Geography
+```bash
+curl "http://localhost:8000/api/geo?disease=диабет"
+```
 
-## CI/CD
+## 🛠️ Tech Stack
 
-Проект использует GitHub Actions для:
-- ✅ Автоматического тестирования (pytest)
-- ✅ Проверки качества кода (mypy, black, isort, flake8)
-- ✅ Code coverage анализ
-- ✅ Автоматического deployment
+- **FastAPI** - async REST API
+- **SQLAlchemy** - PostgreSQL ORM
+- **LangChain** - LLM orchestration
+- **OpenAI** - GPT-4o-mini
+- **Pandas** - data processing
 
-## License
+## 👥 Команда
 
-MIT
+- **Ваня** - Frontend
+- **Макс** - Backend
+- **Сева** - Database + ML
+- **Вася** - LLM Agent
+- **Лёша** - Data Science
+
+---
+
+**Сделано для хакатона** ❤️
