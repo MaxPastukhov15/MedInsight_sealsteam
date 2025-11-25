@@ -41,10 +41,7 @@ class LLMProviderFactory:
         provider_name = provider_name or settings.LLM_PROVIDER
 
         if provider_name not in cls._providers:
-            raise ValueError(
-                f"Unknown provider: {provider_name}. "
-                f"Available: {list(cls._providers.keys())}"
-            )
+            raise ValueError(f"Unknown provider: {provider_name}. Available: {list(cls._providers.keys())}")
 
         default_model = MODEL_NAMES.get(provider_name)
         config = PROVIDER_CONFIGS.get(provider_name, {})

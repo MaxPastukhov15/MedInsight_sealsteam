@@ -1,1 +1,1 @@
-"""API package."""
+"""API routes package."""

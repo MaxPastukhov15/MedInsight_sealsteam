@@ -1,19 +1,45 @@
-"""Database connection."""
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
-from backend.core.config import get_settings
+"""Database connection management.
 
-settings = get_settings()
+Управление async SQLAlchemy connection pool.
+Использование:
+    from database.connection import get_db
 
-engine = create_engine(settings.DATABASE_URL, echo=settings.DEBUG)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+    @app.get("/users")
+    async def get_users(db: AsyncSession = Depends(get_db)):
+        result = await db.execute(select(User))
+        return result.scalars().all()
+"""
+
+from typing import AsyncGenerator
+
+from config.settings import settings
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+# Create async engine
+engine = create_async_engine(
+    settings.DATABASE_URL,
+    echo=settings.DEBUG,
+    future=True,
+    pool_pre_ping=True,  # Проверка подключения
+)
+
+# Create async session factory
+AsyncSessionLocal = async_sessionmaker(
+    engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+    autoflush=False,
+)
 
 
-def get_db():
-    """Get database session."""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """Dependency to get database session.
+
+    Yields:
+        AsyncSession: Database session
+    """
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()

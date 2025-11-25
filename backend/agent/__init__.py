@@ -1,1 +1,1 @@
-"""Agent package."""
+"""AI Agent package."""

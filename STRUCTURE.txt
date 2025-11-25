@@ -1,111 +1,109 @@
 # СТРУКТУРА РЕПОЗИТОРИЯ - Medical Analytics AI-Agent
-# Создано: 2025-11-19
-# Статус: ✅ Backend 95% | 🚧 Frontend 0% | ✅ CI/CD 100%
 
 preparing/
 │
 # ======================== КОРНЕВЫЕ ФАЙЛЫ ========================
 │
-├── README.md                    ✅ Основное описание проекта
-├── .gitignore                   ✅ Что не коммитим (Python, env, cache, etc.)
-├── LICENSE                      ✅ MIT лицензия
-├── .pre-commit-config.yaml      ✅ Автопроверки перед коммитом
-├── pyproject.toml               ✅ Конфиги (mypy --strict, pytest, black, isort)
-├── Makefile                     ✅ Удобные команды (install, lint, test, run)
-├── docker-compose.yml           ✅ PostgreSQL + Redis + Backend
-├── CONTRIBUTING.md              ✅ Гайд для разработчиков
-├── PROJECT_SUMMARY.md           ✅ Статус проекта
-├── STRUCTURE.txt                ✅ Этот файл
+├── README.md                    🚧 Основное описание проекта
+├── .gitignore                   🚧 Что не коммитим (Python, env, cache, etc.)
+├── LICENSE                      🚧 MIT лицензия
+├── .pre-commit-config.yaml      🚧 Автопроверки перед коммитом
+├── pyproject.toml               🚧 Конфиги (mypy --strict, pytest, black, isort)
+├── Makefile                     🚧 Удобные команды (install, lint, test, run)
+├── docker-compose.yml           🚧 PostgreSQL + Redis + Backend
+├── CONTRIBUTING.md              🚧 Гайд для разработчиков
+├── PROJECT_SUMMARY.md           🚧 Статус проекта
+├── STRUCTURE.txt                🚧 Этот файл
 │
 # ======================== BACKEND ========================
 │
 ├── backend/
-│   ├── __init__.py              ✅ Backend package
-│   ├── main.py                  ✅ FastAPI app + API routes
-│   ├── requirements.txt         ✅ Все зависимости (FastAPI, LangChain, etc.)
-│   ├── .env.example             ✅ Шаблон переменных окружения
-│   ├── conftest.py              ✅ Pytest path setup
+│   ├── __init__.py              🚧 Backend package
+│   ├── main.py                  🚧 FastAPI app + API routes
+│   ├── requirements.txt         🚧 Все зависимости (FastAPI, LangChain, etc.)
+│   ├── .env.example             🚧 Шаблон переменных окружения
+│   ├── conftest.py              🚧 Pytest path setup
 │   │
 │   # -------- CONFIG --------
 │   ├── config/
-│   │   ├── __init__.py          ✅ Config package
-│   │   ├── settings.py          ✅ Pydantic settings (DB, Redis, LLM, CORS)
-│   │   ├── llm_config.py        ✅ LLM параметры и модели
-│   │   └── cache_config.py      ✅ Cache TTL конфигурация
+│   │   ├── __init__.py          🚧 Config package
+│   │   ├── settings.py          🚧 Pydantic settings (DB, Redis, LLM, CORS)
+│   │   ├── llm_config.py        🚧 LLM параметры и модели
+│   │   └── cache_config.py      🚧 Cache TTL конфигурация
 │   │
 │   # -------- DATABASE --------
 │   ├── database/
-│   │   ├── __init__.py          ✅ Database package
-│   │   ├── connection.py        ✅ Async SQLAlchemy engine + sessions
-│   │   ├── models.py            ✅ ORM модели (Disease, Forecast, etc.)
-│   │   └── schemas.py           ✅ Pydantic схемы (валидация)
+│   │   ├── __init__.py          🚧 Database package
+│   │   ├── connection.py        🚧 Async SQLAlchemy engine + sessions
+│   │   ├── models.py            🚧 ORM модели (Disease, Forecast, etc.)
+│   │   └── schemas.py           🚧 Pydantic схемы (валидация)
 │   │
 │   # -------- CACHE --------
 │   ├── cache/
-│   │   ├── __init__.py          ✅ Cache package
-│   │   ├── redis_client.py      ✅ Redis async client (get/set/delete)
-│   │   └── cache_manager.py     ✅ Декоратор кэширования + key generation
+│   │   ├── __init__.py          🚧 Cache package
+│   │   ├── redis_client.py      🚧 Redis async client (get/set/delete)
+│   │   └── cache_manager.py     🚧 Декоратор кэширования + key generation
 │   │
 │   # -------- RAG (Retrieval Augmented Generation) --------
 │   ├── rag/
-│   │   ├── __init__.py          ✅ RAG package
-│   │   ├── embeddings.py        ✅ SentenceTransformer wrapper
-│   │   ├── vector_db.py         ✅ ChromaDB client (add/query documents)
-│   │   ├── knowledge_base.py    ✅ Загрузка медицинских протоколов
-│   │   └── rag_pipeline.py      ✅ RAG pipeline (retrieve + format context)
+│   │   ├── __init__.py          🚧 RAG package
+│   │   ├── embeddings.py        🚧 SentenceTransformer wrapper
+│   │   ├── vector_db.py         🚧 ChromaDB client (add/query documents)
+│   │   ├── knowledge_base.py    🚧 Загрузка медицинских протоколов
+│   │   └── rag_pipeline.py      🚧 RAG pipeline (retrieve + format context)
 │   │
 │   # -------- AGENT --------
 │   ├── agent/
-│   │   ├── __init__.py          ✅ Agent package
-│   │   ├── agent.py             ✅ LangGraph agent (TODO: реализовать логику)
-│   │   ├── tools.py             ✅ 5 инструментов агента
-│   │   ├── prompts.py           ✅ System prompts (русский)
+│   │   ├── __init__.py          🚧 Agent package
+│   │   ├── agent.py             🚧 LangGraph agent (TODO: реализовать логику)
+│   │   ├── tools.py             🚧 5 инструментов агента
+│   │   ├── prompts.py           🚧 System prompts (русский)
 │   │   └── llm_providers/
-│   │       ├── __init__.py          ✅ Providers package
-│   │       ├── base.py              ✅ Abstract base provider
-│   │       ├── ollama_provider.py   ✅ Ollama (local models)
-│   │       ├── together_provider.py ✅ Together AI
-│   │       ├── openai_provider.py   ✅ OpenAI/ChatGPT
-│   │       ├── cohere_provider.py   ✅ Cohere
-│   │       └── factory.py           ✅ Factory pattern для создания
+│   │       ├── __init__.py          🚧 Providers package
+│   │       ├── base.py              🚧 Abstract base provider
+│   │       ├── ollama_provider.py   🚧 Ollama (local models)
+│   │       ├── together_provider.py 🚧 Together AI
+│   │       ├── openai_provider.py   🚧 OpenAI/ChatGPT
+│   │       ├── cohere_provider.py   🚧 Cohere
+│   │       └── factory.py           🚧 Factory pattern для создания
 │   │
 │   # -------- SCENARIOS (5 аналитических сценариев) --------
 │   ├── scenarios/
-│   │   ├── __init__.py                      ✅ Scenarios package
-│   │   ├── base.py                          ✅ Базовый класс Scenario
-│   │   ├── scenario_1_disease_analysis.py   ✅ Анализ заболеваемости
-│   │   ├── scenario_2_trend_analysis.py     ✅ Анализ трендов (scipy)
-│   │   ├── scenario_3_forecast.py           ✅ Прогнозирование (Prophet+ARIMA)
-│   │   ├── scenario_4_recommendations.py    ✅ Рекомендации (RAG + LLM)
-│   │   └── scenario_5_pattern_detection.py  ✅ Поиск паттернов (Z-score, correlation)
+│   │   ├── __init__.py                      🚧 Scenarios package
+│   │   ├── base.py                          🚧 Базовый класс Scenario
+│   │   ├── scenario_1_disease_analysis.py   🚧 Анализ заболеваемости
+│   │   ├── scenario_2_trend_analysis.py     🚧 Анализ трендов (scipy)
+│   │   ├── scenario_3_forecast.py           🚧 Прогнозирование (Prophet+ARIMA)
+│   │   ├── scenario_4_recommendations.py    🚧 Рекомендации (RAG + LLM)
+│   │   └── scenario_5_pattern_detection.py  🚧 Поиск паттернов (Z-score, correlation)
 │   │
 │   # -------- API --------
 │   ├── api/
-│   │   ├── __init__.py          ✅ API package
-│   │   ├── routes.py            ✅ FastAPI endpoints (/chat, /analyze, /forecast, etc.)
-│   │   └── dependencies.py      ✅ FastAPI Dependency Injection
+│   │   ├── __init__.py          🚧 API package
+│   │   ├── routes.py            🚧 FastAPI endpoints (/chat, /analyze, /forecast, etc.)
+│   │   └── dependencies.py      🚧 FastAPI Dependency Injection
 │   │
 │   # -------- MONITORING --------
 │   ├── monitoring/
-│   │   ├── __init__.py          ✅ Monitoring package
-│   │   ├── logging_config.py    ✅ Structlog setup
-│   │   ├── metrics.py           ✅ Prometheus metrics
-│   │   └── health_check.py      ✅ Health checks (DB, Redis, LLM)
+│   │   ├── __init__.py          🚧 Monitoring package
+│   │   ├── logging_config.py    🚧 Structlog setup
+│   │   ├── metrics.py           🚧 Prometheus metrics
+│   │   └── health_check.py      🚧 Health checks (DB, Redis, LLM)
 │   │
 │   # -------- TESTS --------
 │   └── tests/
-│       ├── __init__.py          ✅ Tests package
-│       ├── conftest.py          ✅ Pytest fixtures (async, DB session, mock LLM)
-│       ├── test_main.py         ✅ Базовые тесты (root, health)
-│       ├── test_scenarios.py    ✅ Тесты для всех 5 сценариев
-│       ├── test_agent.py        ✅ Тесты для agent tools
-│       ├── test_api.py          ✅ Тесты для API endpoints
-│       └── test_cache.py        ✅ Тесты для кэширования
+│       ├── __init__.py          🚧 Tests package
+│       ├── conftest.py          🚧 Pytest fixtures (async, DB session, mock LLM)
+│       ├── test_main.py         🚧 Базовые тесты (root, health)
+│       ├── test_scenarios.py    🚧 Тесты для всех 5 сценариев
+│       ├── test_agent.py        🚧 Тесты для agent tools
+│       ├── test_api.py          🚧 Тесты для API endpoints
+│       └── test_cache.py        🚧 Тесты для кэширования
 │
 # ======================== FRONTEND ========================
 │
 ├── frontend/                    🚧 TODO: Реализовать полностью
-│   ├── README.md                ✅ Описание структуры frontend
+│   ├── README.md                🚧 Описание структуры frontend
 │   ├── package.json             🚧 TODO
 │   ├── tsconfig.json            🚧 TODO
 │   ├── vite.config.ts           🚧 TODO
@@ -131,80 +129,36 @@ preparing/
 # ======================== DOCS ========================
 │
 ├── docs/
-│   ├── ARCHITECTURE.md          ✅ Техническая архитектура
-│   ├── ALGORITHMS.md            ✅ Математические алгоритмы (формулы)
-│   ├── SETUP.md                 ✅ Детальная установка
-│   ├── API_SPEC.md              ✅ API спецификация с примерами
-│   └── DEPLOYMENT.md            ✅ Deployment guide (Railway + Vercel)
+│   ├── ARCHITECTURE.md          🚧 Техническая архитектура
+│   ├── ALGORITHMS.md            🚧 Математические алгоритмы (формулы)
+│   ├── SETUP.md                 🚧 Детальная установка
+│   ├── API_SPEC.md              🚧 API спецификация с примерами
+│   └── DEPLOYMENT.md            🚧 Deployment guide (Railway + Vercel)
 │
 # ======================== INFRA ========================
 │
 ├── infra/
-│   └── Dockerfile               ✅ Production-ready образ (Python 3.11)
+│   └── Dockerfile               🚧 Production-ready образ (Python 3.11)
 │
 ├── .github/
 │   ├── workflows/
-│   │   ├── test.yml             ✅ CI: pytest, mypy, black, isort, flake8
-│   │   └── deploy.yml           ✅ CD: Railway backend (frontend закомментирован)
-│   └── PULL_REQUEST_TEMPLATE.md ✅ PR шаблон
+│   │   ├── test.yml             🚧 CI: pytest, mypy, black, isort, flake8
+│   │   └── deploy.yml           🚧 CD: Railway backend (frontend закомментирован)
+│   └── PULL_REQUEST_TEMPLATE.md 🚧 PR шаблон
 │
 # ======================== EXAMPLES ========================
 │
 └── examples/
-    └── api_usage.py             ✅ Примеры использования API
+    └── api_usage.py             🚧 Примеры использования API
 
 
 # ============================================================================
 # СТАТУС РЕАЛИЗАЦИИ
 # ============================================================================
 
-✅ ГОТОВО (95% backend):
-- Конфигурация (100%)
-- CI/CD (100%)
-- Backend структура (100%)
-- Database модели (100%)
-- Cache (100%)
-- RAG pipeline (100%)
-- LLM Providers (100% - 4 провайдера)
-- Scenarios (100% - все 5 сценариев)
-- API routes (100%)
-- Monitoring (100%)
-- Tests структура (100%)
-- Documentation (100%)
+✅ ГОТОВО (0%):
 
 🚧 TODO:
-- backend/agent/agent.py - LangGraph логика (критично!)
-- frontend/ - вся директория (для frontend разработчика)
-- Database migrations (Alembic)
-- Тестовые данные
-
-# ============================================================================
-# QUICK START
-# ============================================================================
-
-# 1. Клонировать
-git clone https://github.com/Ronshin-Vsevolod/preparing.git
-cd preparing
-
-# 2. Установить зависимости
-make install-dev
-
-# 3. Настроить .env
-cp backend/.env.example backend/.env
-# Отредактируйте backend/.env
-
-# 4. Запустить БД и Redis
-docker-compose up -d postgres redis
-
-# 5. Запустить backend
-cd backend
-uvicorn main:app --reload
-# API: http://localhost:8000
-# Docs: http://localhost:8000/docs
-
-# 6. Тестировать
-make test
-make lint
 
 # ============================================================================
 # CI/CD
@@ -212,8 +166,5 @@ make lint
 
 GitHub Actions автоматически:
 ✅ Запускает тесты на каждый push/PR
-✅ Проверяет качество кода (black, isort, flake8, mypy)
-✅ Генерирует coverage report
-✅ Деплоит на merge в main (backend ready, frontend TODO)
-
-См: .github/workflows/test.yml и .github/workflows/deploy.yml
+✅ Проверяет качество кода (ruff, mypy)
+✅ Деплоит на merge в main

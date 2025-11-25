@@ -2,7 +2,7 @@
 
 import hashlib
 from functools import wraps
-from typing import Any, Callable  # , Optional  # F401: unused import
+from typing import Any, Callable  # , Optional  # noqa: F401 (unused)
 
 from cache.redis_client import cache
 from config.cache_config import CACHE_TTL_REALTIME

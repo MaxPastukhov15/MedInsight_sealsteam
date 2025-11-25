@@ -63,9 +63,7 @@ class HealthChecker:
             HealthChecker.check_llm(),
         )
 
-        all_healthy = all(
-            h["status"] == "healthy" for h in [db_health, redis_health, llm_health]
-        )
+        all_healthy = all(h["status"] == "healthy" for h in [db_health, redis_health, llm_health])
 
         return {
             "status": "healthy" if all_healthy else "degraded",

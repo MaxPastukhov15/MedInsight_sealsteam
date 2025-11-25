@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "medical-analytics-agent"
+version = "1.0.0"
+description = "Medical Analytics AI-Agent for SpbTechRun 2025"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    {name = "Team"}
+]
+
+# Ruff configuration
+[tool.ruff]
+# Global options
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E"]
+ignore = ["E501", "I001"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true
+
+# Pytest configuration
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --cov=backend --cov-report=html --cov-report=xml --cov-report=term-missing"
+testpaths = ["backend/tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["backend"]
+omit = [
+    "*/tests/*",
+    "*/__init__.py",
+    "*/conftest.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]

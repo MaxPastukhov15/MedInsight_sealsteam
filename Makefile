@@ -1,76 +1,49 @@
-# Recommended: Python 3.11 for stability
-# Makefile will try python3.11 first, then fallback to python3
-PYTHON_PREFERRED := python3.11
-PYTHON_FALLBACK := python3
-VENV_NAME := .venv
-
-PYTHON := $(shell command -v $(PYTHON_PREFERRED) 2>/dev/null || command -v $(PYTHON_FALLBACK) 2>/dev/null)
-
-.PHONY: install-dev clean-venv run lint test check-python help
-
-check-python:
-	@if [ -z "$(PYTHON)" ]; then \
-		echo "❌ ERROR: No Python found!"; \
-		exit 1; \
-	fi
-	@PYTHON_VERSION=$$($(PYTHON) --version 2>&1); \
-	echo "🐍 Using: $$PYTHON_VERSION ($(PYTHON))"; \
-	if echo "$$PYTHON_VERSION" | grep -q "3\.11"; then \
-		echo "✅ Python 3.11 - perfect!"; \
-	elif echo "$$PYTHON_VERSION" | grep -qE "3\.(1[2-9]|[2-9][0-9])"; then \
-		echo "⚠️  Python 3.12+ detected"; \
-		echo "    Recommended: Python 3.11 (see INSTALL.md)"; \
-		echo "    Continuing anyway..."; \
-	else \
-		echo "❌ Python 3.11+ required!"; \
-		echo "    See INSTALL.md for installation"; \
-		exit 1; \
-	fi
-
-install-dev: check-python
-	@echo "🔧 Setting up development environment..."
-	@if [ -d $(VENV_NAME) ]; then \
-		echo "🗑️  Removing existing venv..."; \
-		rm -rf $(VENV_NAME); \
-	fi
-	@echo "📦 Creating venv with $(PYTHON)..."
-	@$(PYTHON) -m venv $(VENV_NAME)
-	@echo "⬆️  Upgrading pip..."
-	@. $(VENV_NAME)/bin/activate && pip install --upgrade pip --quiet
-	@echo "📚 Installing dependencies..."
-	@. $(VENV_NAME)/bin/activate && pip install -r backend/requirements.txt --quiet
-	@. $(VENV_NAME)/bin/activate && pip install -r backend/requirements-ci.txt --quiet
-	@if [ ! -f .env ]; then cp .env.example .env 2>/dev/null && echo "📝 Created .env" || true; fi
-	@. $(VENV_NAME)/bin/activate && pre-commit install --quiet 2>/dev/null || true
-	@echo ""
-	@echo "✅ Ready!"
-	@echo "   Activate: source $(VENV_NAME)/bin/activate"
-	@echo "   Run: make run"
-
-clean-venv:
-	@rm -rf $(VENV_NAME)
-	@echo "✅ Cleaned!"
-
-run:
-	@test -d $(VENV_NAME) || (echo "❌ Run: make install-dev"; exit 1)
-	@echo "🚀 Starting FastAPI..."
-	@. $(VENV_NAME)/bin/activate && uvicorn backend.main:app --reload
-
-lint:
-	@test -d $(VENV_NAME) || (echo "❌ Run: make install-dev"; exit 1)
-	@echo "🔍 Ruff (replaces Black+Flake8+isort)..."
-	@. $(VENV_NAME)/bin/activate && ruff check backend/ --fix
-	@. $(VENV_NAME)/bin/activate && ruff format backend/
-	@echo "✅ Done!"
-
-test:
-	@test -d $(VENV_NAME) || (echo "❌ Run: make install-dev"; exit 1)
-	@. $(VENV_NAME)/bin/activate && pytest backend/tests/ -v 2>/dev/null || echo "⚠️  No tests"
+.PHONY: help setup dev freeze lint format check test clean
 
 help:
-	@echo "Commands:"
-	@echo "  make install-dev    Setup environment"
-	@echo "  make run            Start server"
-	@echo "  make lint           Format code (Ruff only)"
-	@echo "  make test           Run tests"
-	@echo "  make check-python   Check Python version"
+	@echo "📋 Medical Analytics AI-Agent - Available targets:"
+	@echo ""
+	@echo "  make setup       - Create venv and install dependencies"
+	@echo "  make dev        - Run backend development server"
+	@echo "  make freeze     - Generate requirements.txt from pip"
+	@echo "  make lint       - Run ruff check"
+	@echo "  make format     - Format code with ruff"
+	@echo "  make check      - Run mypy type checking"
+	@echo "  make test       - Run pytest tests"
+	@echo "  make clean      - Remove .venv directory"
+
+# Try to find python3.11, fallback to python3
+PYTHON := $(shell command -v python3.11 2>/dev/null || command -v python3 2>/dev/null || echo python)
+VENV := .venv
+PYTHON_VENV := $(VENV)/bin/python
+
+setup: $(VENV)/bin/activate backend/requirements.txt
+	$(PYTHON_VENV) -m pip install --upgrade pip
+	$(PYTHON_VENV) -m pip install -r backend/requirements.txt
+
+$(VENV)/bin/activate:
+	$(PYTHON) -m venv $(VENV)
+
+dev: $(VENV)/bin/activate
+	cd backend && $(PYTHON_VENV) -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+freeze:
+	$(PYTHON_VENV) -m pip freeze > backend/requirements.txt
+
+lint:
+	$(PYTHON_VENV) -m ruff check backend/
+
+format:
+	$(PYTHON_VENV) -m ruff format backend/
+
+check:
+	$(PYTHON_VENV) -m mypy backend/
+
+test:
+	@echo "⚠️  Tests are stubs (WIP). Most test files are in black-box mode."
+	@echo "Run actual tests when implementation is ready:"
+	@echo "  $(PYTHON_VENV) -m pytest backend/tests/ -v"
+	# $(PYTHON_VENV) -m pytest backend/tests/ -v --cov=backend
+
+clean:
+	rm -rf $(VENV)

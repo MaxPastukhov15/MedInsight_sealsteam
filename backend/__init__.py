@@ -1,1 +1,1 @@
-"""Backend package."""
+"""Backend package stub."""

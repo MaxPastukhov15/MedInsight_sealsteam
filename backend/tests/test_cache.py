@@ -3,7 +3,7 @@
 Тесты для Redis кэширования.
 """
 
-# import pytest  # F401: unused import
+# import pytest  # noqa: F401 (unused)
 from cache.cache_manager import generate_cache_key
 
 

@@ -65,4 +65,4 @@ npm install
 npm run dev
 ```
 
-Откроется на: http://localhost:5173
+Откроется на: http://kakoitohost:****

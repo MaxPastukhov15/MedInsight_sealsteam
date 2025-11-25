@@ -1,109 +1,154 @@
-# Medical Analytics AI Agent
+# Medical Analytics AI-Agent
 
-🏥 **AI-агент для анализа медицинских данных**
+> AI-агент для анализа медицинских данных с прогнозированием и рекомендациями
 
-FastAPI + LangChain агент, который отвечает на вопросы о медицинских данных через SQL.
+## Основные возможности
 
-## ✨ Возможности
+- 📊 **Анализ заболеваемости** - текущие показатели по регионам и возрастным группам
+- 📈 **Анализ трендов** - выявление роста/снижения заболеваемости
+- 🔮 **Прогнозирование** - Prophet + ARIMA ensemble на 14 дней
+- 💡 **Рекомендации** - RAG-протоколы + LLM генерация
+- 🔍 **Поиск паттернов** - аномалии, корреляции, сезонность
 
-- 📈 **Анализ трендов** - сезонность заболеваний
-- 🗺️ **География** - распределение по районам
-- 🤖 **LLM агент** - генерирует SQL и отвечает на вопросы
-- 💡 **Простая архитектура** - работает сразу
+## Предварительные требования
 
-## 🚀 Быстрый старт
+- **Python 3.11+**
+- **PostgreSQL 15+** (опционально, для persistence)
+- **Redis 7+**       (опционально, для кэширования)
+- **Node.js 18+**
 
-### 1. Установка
+
+## Quick Start
+
+### 1. Клонировать репозиторий
 
 ```bash
-# Клонировать
 git clone https://github.com/Ronshin-Vsevolod/preparing.git
 cd preparing
+```
+
+### 2. Установить зависимости
+
+**Автоматически (рекомендуется):**
+
+```bash
+make setup
+source .venv/bin/activate
+```
+
+Эта команда создаст `.venv`, установит все зависимости и настроит окружение.
+
+**Вручную (альтернатива):**
+
+```bash
+# Создать venv
+python3.11 -m venv .venv
+
+# Активировать (Linux/macOS)
+source .venv/bin/activate
 
 # Установить зависимости
-make install-dev
-
-# Настроить .env
-cp .env.example .env
-nano .env  # Добавить DATABASE_URL и OPENAI_API_KEY
+pip install --upgrade pip
+pip install -r backend/requirements.txt
+pip install -r backend/requirements-ci.txt
 ```
 
-### 2. База данных
+### 3. Запустить backend
+
+## Основные команды
+
+| Команда | Описание |
+|---------|-------------|
+| `make setup` | Создать `.venv` и установить зависимости из `backend/requirements.txt` |
+| `make dev` | Запустить backend на `localhost:8000` (uvicorn с hot-reload) |
+| `make freeze` | Обновить `backend/requirements.txt` из установленных пакетов |
+| `make format` | Форматировать код с ruff |
+| `make lint` | Проверка кода с ruff |
+| `make check` | Проверка типов с mypy |
+| `make test` | Запустить pytest тесты (заглушка, раскомментируйте когда тесты готовы) |
+| `make clean` | Удалить `.venv` директорию |
+
+Полный список: `make help`
+
+## Управление зависимостями
+
+### Добавить пакет
 
 ```bash
-# Создать PostgreSQL базу
-createbuser medical_analytics
-createdb -O medical_analytics medical_analytics
-
-# Загрузить данные
-mkdir -p data/raw
-# Положите CSV файлы в data/raw/
-
 source .venv/bin/activate
-python backend/scripts/load_data.py
+pip install новый-пакет
+
+# Обновить requirements.txt
+pip freeze > backend/requirements.txt
 ```
 
-### 3. Запуск
+### Просмотреть установленные пакеты
 
 ```bash
-make run
-# Перейти на http://localhost:8000/docs
+make freeze
 ```
 
-## 📚 Структура
+## Структура проекта
 
 ```
-backend/
-├── core/
-│   └── config.py          # Настройки
-├── database/
-│   ├── connection.py      # SQLAlchemy
-│   └── models.py          # DiseaseCase модель
-├── api/
-│   ├── chat.py            # POST /api/chat
-│   └── visualize.py       # GET /api/trends, /api/geo
-├── agent/
-│   └── simple_agent.py    # LLM агент
-├── scripts/
-│   └── load_data.py       # Загрузка CSV
-└── main.py                # FastAPI app
+preparing/
+├── backend/              # FastAPI backend
+│   ├── config/           # Конфигурация
+│   ├── database/         # БД модели и подключение
+│   ├── cache/            # Redis кэширование
+│   ├── rag/              # RAG pipeline (ChromaDB + embeddings)
+│   ├── agent/            # LangGraph AI-агент
+│   ├── scenarios/        # 5 аналитических сценариев
+│   ├── api/              # FastAPI routes
+│   ├── monitoring/       # Логирование и метрики
+│   ├── tests/            # Тесты
+│   └── requirements.txt  # Зависимости проекта
+├── frontend/             # React + TypeScript
+├── docs/                 # Документация
+├── .github/              # GitHub Actions CI/CD
+├── .venv/                # Virtual environment (не в git)
+├── README.md             # Этот файл
+├── Makefile              # Команды разработки
+└── .venv/                # Virtual environment (создаётся через make setup)
 ```
 
-## 📡 API
+## Технологии
 
-### Chat
-```bash
-curl -X POST http://localhost:8000/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Сколько случаев гриппа?", "session_id": "test"}'
-```
+### Backend
+- **FastAPI** - REST API framework
+- **LangChain + LangGraph** - AI agent orchestration
+- **SQLAlchemy** - ORM for PostgreSQL
+- **ChromaDB** - Vector database for RAG
+- **Redis** - Caching
+- **Prophet + ARIMA** - Time series forecasting
+- **Structlog** - Structured logging
 
-### Trends
-```bash
-curl "http://localhost:8000/api/trends?disease=грипп"
-```
+### Frontend
+- **React 18** - UI framework
+- **TypeScript** - Type safety
+- **Vite** - Build tool
+- **Plotly** - Interactive visualizations
 
-### Geography
-```bash
-curl "http://localhost:8000/api/geo?disease=диабет"
-```
+### DevOps
+- **Docker** - Containerization
+- **GitHub Actions** - CI/CD
+- **pytest** - Testing framework
+- **ruff, mypy,** - Code quality
 
-## 🛠️ Tech Stack
+## Документация
 
-- **FastAPI** - async REST API
-- **SQLAlchemy** - PostgreSQL ORM
-- **LangChain** - LLM orchestration
-- **OpenAI** - GPT-4o-mini
-- **Pandas** - data processing
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md) - Техническая архитектура
+- [ALGORITHMS.md](docs/ALGORITHMS.md) - Математические алгоритмы
+- [API_SPEC.md](docs/API_SPEC.md) - API спецификация
 
-## 👥 Команда
+## CI/CD
 
-- **Ваня** - Frontend
-- **Макс** - Backend
-- **Сева** - Database + ML
-- **Вася** - LLM Agent
-- **Лёша** - Data Science
+Проект использует GitHub Actions для:
+- ✅ Автоматического тестирования (pytest)
+- ✅ Проверки качества кода (mypy, ruff)
+- ✅ Code coverage анализ
+- ✅ Автоматического deployment
 
----
+## License
 
-**Сделано для хакатона** ❤️
+MIT

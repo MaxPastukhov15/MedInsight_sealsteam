@@ -1,109 +1,102 @@
-# Руководство по вкладу
+# SPBTrueTech project contributing guide
 
-## Начало работы
+## How to Contribute 
 
-1. **Fork репозитория**
-2. **Клонировать ваш fork**
+Follow these steps to get started. We use the Forking Workflow model.
+
+### 1. Create a different branch with source from main(Mandatory)
+
+You need create new branch (use as source: main branch).
+
+There two main variants to create a new branch(name format : `<your_name>/<what-this-branch-solves>`)
+1.Write git checkout -b <branch_name>
+2. Use web_interface
+
+
+For example: `VasyaPetrov/backend_arch`
+
+```bash
+git checkout main
+git checkout -b <your_name>/<what-this-branch-solves>
+```
+
+
+
+### 2. Set Up Your Development Environment
+
+To start working on the code, you need to install the project dependencies and set up the pre-commit hooks. These hooks automatically check your code for quality and style before each commit.
+
+1. **Install dependencies:**
+
+   Follow steps in [README.md](README.md)
+
+2. **Install pre-commit hooks:**
+
    ```bash
-   git clone https://github.com/YOUR_USERNAME/preparing.git
-   cd preparing
-   ```
-
-3. **Создать ветку для фичи**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-4. **Установить зависимости для разработки**
-   ```bash
-   make install-dev
    pre-commit install
    ```
 
-## Стандарты кода
+   This command sets up the hooks in your local Git repository. **This is a required step for all contributors.**
 
-### Python
+Now your environment is ready. The hooks will run automatically every time you run `git commit`.
 
-- **Форматирование**: Black (88 символов)
-- **Импорты**: isort с profile=black
-- **Типы**: mypy --strict
-- **Linting**: flake8
-- **Docstrings**: Google style
 
-### Пример docstring
 
-```python
-def my_function(param1: str, param2: int) -> bool:
-    """Brief description.
+### 4. Make and Commit Changes
 
-    Longer description if needed.
+Work on the code in your new branch. When you're ready to save your changes, create a commit. 
+Use the following types:
 
-    Args:
-        param1: Description of param1
-        param2: Description of param2
+- `feat`: to add new functionality.
+- `fix`: to fix a bug in the project.
+- `refactor`: for code refactoring, such as renaming a variable or improving readability.
+- `test`: to add or refactor tests.
+- `struct`: for changes related to the project structure (NOT CODE), for example, changing folder locations.
+- `ci`: for various CI/CD tasks.
+- `docs`: for changes in documentation.
+- `chore`: for other changes that do not affect the code or tests (e.g., updating `.gitignore`, `README.md`).
 
-    Returns:
-        Description of return value
 
-    Raises:
-        ValueError: When something goes wrong
-    """
-    pass
+
+```bash
+# Add the files you have changed
+git add .
+
+# Create a commit with a proper message
+git commit -m "feat(auth): implement user authentication"
 ```
 
-## Процесс разработки
+Try to divide commits into atomic and independent parts. That is, do not add unrelated changes to the code in one commit.
 
-1. **Написать код**
-2. **Запустить форматирование**
-   ```bash
-   make format
-   ```
 
-3. **Запустить linting**
-   ```bash
-   make lint
-   ```
 
-4. **Написать тесты**
-   - Каждая новая функция должна иметь тесты
-   - Цель: 80%+ coverage
+### 5. Push Changes to Your Fork
 
-5. **Запустить тесты**
-   ```bash
-   make test
-   ```
+After you have made one or more commits, push your branch to your remote fork on GitHub:
 
-6. **Commit изменений**
-   ```bash
-   git add .
-   git commit -m "feat: Add feature description"
-   ```
+```bash
+git push
+```
 
-   **Commit сообщения:**
-   - `feat:` - новая функциональность
-   - `fix:` - исправление бага
-   - `docs:` - документация
-   - `test:` - тесты
-   - `refactor:` - рефакторинг
-   - `chore:` - технические задачи
 
-7. **Создать Pull Request**
-   - Опишите изменения
-   - Ссылка на issue (если есть)
-   - Дождитесь review
 
-## CI/CD
+### 6. Create a Pull Request (PR)
 
-GitHub Actions автоматически:
-- Запустит все тесты
-- Проверит качество кода
-- Сгенерирует coverage report
+Once your branch has the changes, you can create a Pull Request to propose your changes to the main.
 
-PR не будет смержен, если:
-- Тесты не проходят
-- Linting ошибки
-- Coverage < 80%
+1. You will see a notification prompting you to create a Pull Request for your recently pushed branch. Click the **"Compare & pull request"** button.
+2. Give your Pull Request a meaningful title (following the [Conventional Commits](https://www.google.com/url?sa=E&q=https%3A%2F%2Fwww.conventionalcommits.org%2F) standard) and add a detailed description of the changes you've made.
 
-## Вопросы
+#### Rules for Your PR to be Merged
 
-Создайте issue или напишите в discussions.
+For your Pull Request to be merged, it must meet the following requirements configured in the repository:
+
+- **CI/CD Checks Must Pass:** All automated status checks (tests, linters, etc.) configured in the  project must complete successfully. If any check fails, you will need to fix the issue and push new commits to your branch.
+- **Mandatory Code Review:**
+  - Your PR must receive at least **one approval** from another project member.
+  - The PR author **cannot** approve their own work. The most recent set of changes must be approved by someone other than the person who pushed them.
+  - If you push new commits to your branch after receiving an approval, that  approval will be automatically dismissed. The changes will need to be  reviewed again. This ensures that the latest version of the code is  always reviewed.
+- **All Conversations Must Be Resolved:** All comments and conversations on the code left during the review must be marked as resolved before the PR can be merged.
+- **No Force Pushing:** The main branch is protected from force pushes to ensure a stable and clean commit history.
+
+Each pull request must be reviewed by one of person from the team(or we would choose two people who will be in charge of code review):

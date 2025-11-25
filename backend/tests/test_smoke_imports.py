@@ -1,3 +1,5 @@
+# ruff: noqa: F401
+
 """Smoke test for all requirements imports.
 
 Этот тест проверяет, что все зависимости из requirements.txt действительно устанавливаются,
