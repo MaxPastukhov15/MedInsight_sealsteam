@@ -1,0 +1,66 @@
+import pandas as pd
+from etl.base_processor import BaseProcessor
+
+
+class MedicationsProcessor(BaseProcessor):
+    """
+    Процессор справочника лекарств.
+
+    Ожидаемая схема:
+    - код_препарата (int/str)
+    - дозировка (str/float)
+    - Торговое название (str)
+    - стоимость (float)
+    - Полное_название (str)
+    """
+
+    def validate(self) -> bool:
+        """Строгая проверка схемы."""
+        if self.df is None:
+            return False
+
+        expected_cols = ["код_препарата", "дозировка", "Торговое название", "стоимость", "Полное_название"]
+
+        missing = [col for col in expected_cols if col not in self.df.columns]
+
+        if missing:
+            self.logger.error(f"Неверная структура файла. Отсутствуют колонки: {missing}")
+            return False
+        return True
+
+    def clean(self) -> None:
+        """Очистка и переименование."""
+        if self.df is None:
+            return
+
+        self.logger.info("Стандартизация справочника лекарств...")
+
+        # 1. Переименование колонок
+        rename_map = {
+            "код_препарата": "drug_id",
+            "дозировка": "dosage",
+            "Торговое название": "trade_name",
+            "стоимость": "price",
+            "Полное_название": "full_name",
+        }
+        self.df = self.df.rename(columns=rename_map)
+
+        # 2. Очистка ID
+        self.df["drug_id"] = self.df["drug_id"].astype(str).str.strip()
+
+        # 3. Очистка Цены
+        self.df["price"] = pd.to_numeric(self.df["price"], errors="coerce").fillna(0.0)
+
+        # 4. Текстовые поля (strip)
+        text_cols = ["trade_name", "full_name", "dosage"]
+        for col in text_cols:
+            self.df[col] = self.df[col].astype(str).str.strip()
+
+    def enrich(self) -> None:
+        """Финальная выборка."""
+        if self.df is None:
+            return
+
+        target_cols = ["drug_id", "trade_name", "full_name", "dosage", "price"]
+
+        self.df = self.df[target_cols]

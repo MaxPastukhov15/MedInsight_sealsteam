@@ -84,3 +84,9 @@ wheels/
 
 # pyenv
 .python-version
+
+# Данные
+data/raw/*
+!data/raw/.gitkeep
+data/processing/*
+!data/processing/.gitkeep
