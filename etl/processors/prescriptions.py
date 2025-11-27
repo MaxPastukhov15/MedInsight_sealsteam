@@ -7,12 +7,13 @@ class PrescriptionsProcessor(BaseProcessor):
     Процессор таблицы рецептов.
 
     Ожидаемая схема:
-    - id_пациента (Col 1) -> patient_id
+    - id_пациента
     - дата_рецепта -> date
     - код_диагноза -> diagnosis_code
     - код_препарата -> drug_id
+    - id_пациента -> patient_id
 
-    5-ую колонку игнорируем как мусорные данные
+    1-ую колонку игнорируем как мусорные данные
     """
 
     def validate(self) -> bool:
@@ -20,7 +21,7 @@ class PrescriptionsProcessor(BaseProcessor):
         if self.df is None:
             return False
 
-        expected_cols = ["id_пациента", "дата_рецепта", "код_диагноза", "код_препарата"]
+        expected_cols = ["дата_рецепта", "код_диагноза", "код_препарата", "id_пациента.1"]
 
         missing = [col for col in expected_cols if col not in self.df.columns]
 
@@ -38,14 +39,14 @@ class PrescriptionsProcessor(BaseProcessor):
 
         # 1. Переименование колонок
         rename_map = {
-            "id_пациента": "patient_id",
+            "id_пациента.1": "patient_id",
             "дата_рецепта": "date_raw",
             "код_диагноза": "diagnosis_code",
             "код_препарата": "drug_id",
         }
         self.df = self.df.rename(columns=rename_map)
 
-        # 2. Очистка (берем первую колонку, которая теперь patient_id)
+        # 2. Очистка (берем пятую колонку, которая теперь patient_id)
         self.df["patient_id"] = self.df["patient_id"].astype(str).str.split(".").str[0].str.strip()
 
         # 3. Парсинг даты
