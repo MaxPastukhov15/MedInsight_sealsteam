@@ -61,12 +61,13 @@ class PrescriptionsProcessor(BaseProcessor):
         # 3. Очистка ID (приводим к строкам)
         self.df["prescription_id"] = self.df["prescription_id"].astype(str).str.strip()
         self.df["patient_id"] = self.df["patient_id"].astype(str).str.split(".").str[0].str.strip()
+
         mask_valid_presc = ~self.df["prescription_id"].isin(["", "nan", "None"])
         mask_valid_patient = ~self.df["patient_id"].isin(["", "nan", "None"])
+        self.df = self.df[mask_valid_presc & mask_valid_patient]
 
         # 4. Парсинг даты
         self.df["date"] = pd.to_datetime(self.df["date_raw"], errors="coerce", dayfirst=False)
-        self.df = self.df.dropna(subset=["date"])
 
         # 5. Очистка внешних ключей
         self.df["diagnosis_code"] = self.df["diagnosis_code"].astype(str).str.strip().str.upper()

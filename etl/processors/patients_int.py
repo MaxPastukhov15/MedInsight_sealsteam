@@ -74,30 +74,30 @@ class PatientsIntProcessor(BaseProcessor):
         # 5. Пол
         self.df["gender"] = self.df["gender"].fillna("Unknown").astype(str).str.strip().str.upper()
 
-        def enrich(self) -> None:
-            """Расчет производных метрик."""
-            if self.df is None:
-                return
+    def enrich(self) -> None:
+        """Расчет производных метрик."""
+        if self.df is None:
+            return
 
-            self.logger.info("Расчет возраста...")
+        self.logger.info("Расчет возраста...")
 
-            # 1. Парсинг даты
-            self.df["birth_dt"] = pd.to_datetime(self.df["birth_date_raw"], dayfirst=True, errors="coerce")
+        # 1. Парсинг даты
+        self.df["birth_dt"] = pd.to_datetime(self.df["birth_date_raw"], dayfirst=True, errors="coerce")
 
-            # 2. Проверка на битые даты
-            invalid_dates = self.df["birth_dt"].isna().sum()
-            if invalid_dates > 0:
-                self.logger.warning(f"Не удалось распознать дату рождения у {invalid_dates} пациентов")
+        # 2. Проверка на битые даты
+        invalid_dates = self.df["birth_dt"].isna().sum()
+        if invalid_dates > 0:
+            self.logger.warning(f"Не удалось распознать дату рождения у {invalid_dates} пациентов")
 
-            # 3. Точный возраст
-            now = datetime.now()
-            self.df["age"] = (now - self.df["birth_dt"]) / pd.Timedelta(days=365.25)
-            self.df["age"] = self.df["age"].fillna(0).astype(int)
+        # 3. Точный возраст
+        now = datetime.now()
+        self.df["age"] = (now - self.df["birth_dt"]) / pd.Timedelta(days=365.25)
+        self.df["age"] = self.df["age"].fillna(0).astype(int)
 
-            # 4. Фильтрация выбросов
-            mask_invalid = (self.df["age"] < 0) | (self.df["age"] > 110)
-            if mask_invalid.any():
-                self.df.loc[mask_invalid, "age"] = np.nan
+        # 4. Фильтрация выбросов
+        mask_invalid = (self.df["age"] < 0) | (self.df["age"] > 110)
+        if mask_invalid.any():
+            self.df.loc[mask_invalid, "age"] = np.nan
 
-            # 5. Финальная выборка
-            self.df = self.df[["patient_id", "birth_dt", "age", "gender", "district", "region"]]
+        # 5. Финальная выборка
+        self.df = self.df[["patient_id", "birth_dt", "age", "gender", "district", "region"]]

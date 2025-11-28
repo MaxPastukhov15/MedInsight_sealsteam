@@ -59,7 +59,7 @@ class MedicationsProcessor(BaseProcessor):
         self.df["drug_id"] = self.df["drug_id"].astype(str).str.strip()
 
         # 4. Очистка Цены
-        self.df["price"] = pd.to_numeric(self.df["price"], errors="coerce").fillna(0.0)
+        self.df["price"] = pd.to_numeric(self.df["price"], errors="coerce")
 
         # 5. Текстовые поля (strip)
         text_cols = ["trade_name", "full_name", "dosage"]
