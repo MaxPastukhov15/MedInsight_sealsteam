@@ -1,7 +1,7 @@
 import pandas as pd
 import logging
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, List
 
 # Настройка логгера
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -80,3 +80,19 @@ class BaseProcessor(ABC):
 
         self.logger.info("=== Обработка завершена ===\n")
         return self.df
+
+    def remove_duplicates(self, subset: Optional[List[str]] = None) -> None:
+        """
+        Удаляет полные дубликаты строк.
+        :param subset: Список колонок для проверки (если None - проверяем всю строку целиком).
+        """
+        if self.df is None:
+            return
+
+        start_len = len(self.df)
+        self.df = self.df.drop_duplicates(subset=subset, keep="first")
+        end_len = len(self.df)
+
+        diff = start_len - end_len
+        if diff > 0:
+            self.logger.info(f"Удалено дубликатов: {diff} (Subset: {subset if subset else 'ALL columns'})")

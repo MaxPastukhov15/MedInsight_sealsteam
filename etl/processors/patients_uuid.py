@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 from etl.base_processor import BaseProcessor
+from typing import List
 
 
 class PatientsUuidProcessor(BaseProcessor):
@@ -60,6 +61,9 @@ class PatientsUuidProcessor(BaseProcessor):
         # 4. Заглушки для географии
         self.df["district"] = "UNKNOWN"
         self.df["region"] = "UNKNOWN"
+
+        # 5. Удаление дубликатов
+        self.remove_duplicates()
 
     def enrich(self) -> None:
         """Расчет возраста (аналогично основному датасету)."""

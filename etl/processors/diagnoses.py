@@ -1,5 +1,6 @@
 import pandas as pd
 from etl.base_processor import BaseProcessor
+from typing import List
 
 
 class DiagnosesProcessor(BaseProcessor):
@@ -49,6 +50,9 @@ class DiagnosesProcessor(BaseProcessor):
 
         # 4. Удаление дубликатов
         self.df = self.df.drop_duplicates(subset=["diagnosis_code"])
+
+        # 5. Удаление дубликатов
+        self.remove_duplicates()
 
     def enrich(self) -> None:
         """Финальная выборка."""

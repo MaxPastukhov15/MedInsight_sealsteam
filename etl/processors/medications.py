@@ -1,5 +1,6 @@
 import pandas as pd
 from etl.base_processor import BaseProcessor
+from typing import List
 
 
 class MedicationsProcessor(BaseProcessor):
@@ -55,6 +56,9 @@ class MedicationsProcessor(BaseProcessor):
         text_cols = ["trade_name", "full_name", "dosage"]
         for col in text_cols:
             self.df[col] = self.df[col].astype(str).str.strip()
+
+        # 5. Удаление дубликатов
+        self.remove_duplicates()
 
     def enrich(self) -> None:
         """Финальная выборка."""

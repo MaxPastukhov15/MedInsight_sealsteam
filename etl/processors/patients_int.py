@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 from etl.base_processor import BaseProcessor
+from typing import List
 
 
 class PatientsIntProcessor(BaseProcessor):
@@ -59,6 +60,9 @@ class PatientsIntProcessor(BaseProcessor):
 
         # 4. Пол
         self.df["gender"] = self.df["gender"].fillna("Unknown").astype(str).str.strip().str.upper()
+
+        # 5. Удаление дубликатов
+        self.remove_duplicates()
 
         def enrich(self) -> None:
             """Расчет производных метрик."""
