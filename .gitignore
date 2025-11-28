@@ -84,3 +84,6 @@ wheels/
 
 # pyenv
 .python-version
+
+# База данных
+*.parquet

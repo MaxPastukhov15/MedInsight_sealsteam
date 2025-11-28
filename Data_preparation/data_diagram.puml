@@ -1,0 +1,41 @@
+@startuml
+entity patients {
+  * patient_id
+  --
+  birth_date_raw
+  gender
+  district
+  region
+}
+
+entity medications {
+  * drug_id
+  --
+  dosage
+  trade_name
+  price
+  full_name
+}
+
+entity diagnoses {
+  * diagnosis_code
+  --
+  diagnosis_name
+  disease_class
+}
+
+entity prescriptions {
+  * prescription_id
+  --
+  patient_id
+  diagnosis_code
+  drug_id
+  date
+  year
+  month
+}
+
+patients ||..o{ prescriptions
+medications ||..o{ prescriptions
+diagnoses ||..o{ prescriptions
+@enduml
