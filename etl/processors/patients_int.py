@@ -7,13 +7,22 @@ from typing import List
 
 class PatientsIntProcessor(BaseProcessor):
     """
-    Процессор для patients_int.csv (основной файл с районами).
-    Ожидаемая схема:
-    - id_пациента (int)
-    - дата_рождения (dd.mm.yyyy)
-    - пол (строка)
-    - район_проживания (строка)
-    - регион (строка)
+    Процессор основной таблицы пациентов (Integer ID).
+
+    Схема преобразования:
+    - id_пациента       -> patient_id (str)
+    - дата_рождения     -> birth_dt (datetime)
+                        -> age (int)
+    - пол               -> gender (str)
+    - район_проживания  -> district (str)
+    - регион            -> region (str)
+
+    Логика обработки:
+    - Полные дубликаты удаляются.
+    - Коллизии ID (разные данные) -> суффикс "_N".
+    - gender, district, region: Пропуски -> "UNKNOWN".
+    - birth_dt: Пропуски/ошибки -> NaT.
+    - age: <0 или >110 -> 0.
     """
 
     def validate(self) -> bool:
@@ -47,22 +56,23 @@ class PatientsIntProcessor(BaseProcessor):
         }
         self.df = self.df.rename(columns=rename_map)
 
-        # 2. Очистка ID
+        # 2. Удаление дубликатов и заполнение пропусков
+        self.remove_duplicates()
+        self.fill_text_na(["district", "region", "gender"])
+
+        # 3. Очистка ID
         self.df = self.df.dropna(subset=["patient_id"])
         self.df["patient_id"] = self.df["patient_id"].astype(int).astype(str)
 
-        # 3. География
+        # 4. География
         # Заполняем пропуски 'Unknown', приводим к верхнему регистру
         geo_cols = ["district", "region"]
 
         for col in geo_cols:
             self.df[col] = self.df[col].fillna("Unknown").astype(str).str.strip().str.upper()
 
-        # 4. Пол
+        # 5. Пол
         self.df["gender"] = self.df["gender"].fillna("Unknown").astype(str).str.strip().str.upper()
-
-        # 5. Удаление дубликатов
-        self.remove_duplicates()
 
         def enrich(self) -> None:
             """Расчет производных метрик."""

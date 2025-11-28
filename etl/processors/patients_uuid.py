@@ -7,14 +7,19 @@ from typing import List
 
 class PatientsUuidProcessor(BaseProcessor):
     """
-    Процессор для patients_uuid.csv.
+    Процессор дополнительной таблицы пациентов (UUID).
 
-    Ожидаемая схема:
-    - id (UUID)
-    - дата_рождения
-    - пол
-
-    СНИЛС игнорируется как ненужные данные.
+    Схема преобразования:
+    - id (UUID)         -> patient_id (синтетический str > "10000000")
+    - дата_рождения     -> birth_date_raw (str)
+                        -> age (int)
+    - пол               -> gender (str)
+    - [Отсутствует]     -> district ("UNKNOWN")
+    - [Отсутствует]     -> region ("UNKNOWN")
+    - СНИЛС             -> [игнорируется]
+    Логика обработки:
+    - UUID -> int ID (> 10mln).
+    - gender, birth_date_raw: Пропуски -> "UNKNOWN".
     """
 
     def validate(self) -> bool:
@@ -40,13 +45,17 @@ class PatientsUuidProcessor(BaseProcessor):
 
         # 1. Переименование
         rename_map = {
-            "id": "patient_id",  # UUID становится основным ID
+            "id": "patient_id",
             "дата_рождения": "birth_date_raw",
             "пол": "gender",
         }
         self.df = self.df.rename(columns=rename_map)
 
-        # 2. Генерация синтетического ID
+        # 2. Удаление дубликатов и заполнение пропусков
+        self.remove_duplicates()
+        self.fill_text_na(["birth_date_raw", "gender"])
+
+        # 3. Генерация синтетического ID
         start_id = 10_000_000
         count = len(self.df)
 
@@ -55,15 +64,12 @@ class PatientsUuidProcessor(BaseProcessor):
 
         self.df["patient_id"] = self.df["patient_id"].astype(str)
 
-        # 3. Очистка пола
+        # 4. Очистка пола
         self.df["gender"] = self.df["gender"].fillna("Unknown").astype(str).str.strip().str.upper()
 
-        # 4. Заглушки для географии
+        # 5. Заглушки для географии
         self.df["district"] = "UNKNOWN"
         self.df["region"] = "UNKNOWN"
-
-        # 5. Удаление дубликатов
-        self.remove_duplicates()
 
     def enrich(self) -> None:
         """Расчет возраста (аналогично основному датасету)."""

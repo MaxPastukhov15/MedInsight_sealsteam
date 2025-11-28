@@ -7,12 +7,17 @@ class MedicationsProcessor(BaseProcessor):
     """
     Процессор справочника лекарств.
 
-    Ожидаемая схема:
-    - код_препарата (int/str)
-    - дозировка (str/float)
-    - Торговое название (str)
-    - стоимость (float)
-    - Полное_название (str)
+    Схема преобразования:
+    - код_препарата     -> drug_id (str)
+    - Полное_название   -> full_name (str)
+    - Торговое название -> trade_name (str)
+    - стоимость         -> price (float)
+    - дозировка         -> dosage (str)
+
+
+    Логика обработки:
+    - price: Пропуски -> NaN.
+    - full_name, trade_name, dosage: Пропуски -> "UNKNOWN".
     """
 
     def validate(self) -> bool:
@@ -46,19 +51,20 @@ class MedicationsProcessor(BaseProcessor):
         }
         self.df = self.df.rename(columns=rename_map)
 
-        # 2. Очистка ID
+        # 2. Удаление дубликатов и заполнение пропусков
+        self.remove_duplicates()
+        self.fill_text_na(["full_name", "trade_name", "dosage"])
+
+        # 3. Очистка ID
         self.df["drug_id"] = self.df["drug_id"].astype(str).str.strip()
 
-        # 3. Очистка Цены
+        # 4. Очистка Цены
         self.df["price"] = pd.to_numeric(self.df["price"], errors="coerce").fillna(0.0)
 
-        # 4. Текстовые поля (strip)
+        # 5. Текстовые поля (strip)
         text_cols = ["trade_name", "full_name", "dosage"]
         for col in text_cols:
             self.df[col] = self.df[col].astype(str).str.strip()
-
-        # 5. Удаление дубликатов
-        self.remove_duplicates()
 
     def enrich(self) -> None:
         """Финальная выборка."""

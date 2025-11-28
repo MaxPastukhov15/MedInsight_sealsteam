@@ -1,7 +1,7 @@
 import pandas as pd
 import logging
 from abc import ABC, abstractmethod
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 
 # Настройка логгера
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -86,7 +86,7 @@ class BaseProcessor(ABC):
         Удаляет полные дубликаты строк.
         :param subset: Список колонок для проверки (если None - проверяем всю строку целиком).
         """
-        if self.df is None:
+        if self.df is None:  #          в работе...
             return
 
         start_len = len(self.df)
@@ -96,3 +96,27 @@ class BaseProcessor(ABC):
         diff = start_len - end_len
         if diff > 0:
             self.logger.info(f"Удалено дубликатов: {diff} (Subset: {subset if subset else 'ALL columns'})")
+
+    def fill_na(self, defaults: Dict[str, Any]) -> None:
+        """
+        Заполняет пропуски в указанных колонках заданными значениями.
+        Пример: {'price': 0.0, 'name': 'Unknown'}f
+        """
+        if self.df is None:
+            return
+
+        for col, value in defaults.items():
+            if col in self.df.columns:
+                self.df[col] = self.df[col].fillna(value)
+            else:
+                self.logger.warning(f"Попытка заполнить пропуски в несуществующей колонке: {col}")
+
+    def fill_text_na(self, cols: List[str], value: str = "UNKNOWN") -> None:
+        """
+        Заполняет пропуски в текстовых колонках значением (по дефолту 'UNKNOWN').
+        """
+        if self.df is None:
+            return
+
+        defaults = {col: value for col in cols}
+        self.fill_na(defaults)

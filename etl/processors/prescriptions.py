@@ -7,21 +7,24 @@ class PrescriptionsProcessor(BaseProcessor):
     """
     Процессор таблицы рецептов.
 
-    Ожидаемая схема:
-    - id_пациента -> prescription_id
-    - дата_рецепта -> date
-    - код_диагноза -> diagnosis_code
-    - код_препарата -> drug_id
-    - id_пациента -> patient_id
-                    ->"date"
-                    ->year
-                    ->month
+    Схема преобразования:
+    - id_пациента (1-я кол.) -> prescription_id (str)
+    - id_пациента (5-я кол.) -> patient_id (str)
+    - дата_рецепта           -> date (datetime)
+                             -> year (int)
+                             -> month (int)
+    - код_диагноза           -> diagnosis_code (str)
+    - код_препарата          -> drug_id (str)
 
-    1-ая колонка на самом деле id_рецепта
+    Логика обработки:
+    - 1-я колонка считается ID рецепта, 5-я — ID пациента.
+    - diagnosis_code, drug_id -> "UNKNOWN" (если пустые).
+    - date: Пропуски/ошибки -> NaT.
+    - patient_id, prescription_id: Пустые значения удаляются.
     """
 
     def validate(self) -> bool:
-        """Строгая проверка схемы (4 основные колонки)."""
+        """Строгая проверка схемы."""
         if self.df is None:
             return False
 
@@ -51,20 +54,23 @@ class PrescriptionsProcessor(BaseProcessor):
         }
         self.df = self.df.rename(columns=rename_map)
 
-        # 2. Очистка ID (приводим к строкам)
+        # 2. Удаление дубликатов и заполнение пропусков
+        self.remove_duplicates()
+        self.fill_text_na(["diagnosis_code", "drug_id"])
+
+        # 3. Очистка ID (приводим к строкам)
         self.df["prescription_id"].astype(str).str.strip()
         self.df["patient_id"] = self.df["patient_id"].astype(str).str.split(".").str[0].str.strip()
+        mask_valid_presc = ~self.df["prescription_id"].isin(["", "nan", "None"])
+        mask_valid_patient = ~self.df["patient_id"].isin(["", "nan", "None"])
 
-        # 3. Парсинг даты
+        # 4. Парсинг даты
         self.df["date"] = pd.to_datetime(self.df["date_raw"], errors="coerce", dayfirst=False)
         self.df = self.df.dropna(subset=["date"])
 
-        # 4. Очистка внешних ключей
+        # 5. Очистка внешних ключей
         self.df["diagnosis_code"] = self.df["diagnosis_code"].astype(str).str.strip().str.upper()
         self.df["drug_id"] = self.df["drug_id"].astype(str).str.strip()
-
-        # 5. Удаление дубликатов
-        self.remove_duplicates()
 
     def enrich(self) -> None:
         """Добавление временных меток."""
