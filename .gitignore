@@ -85,5 +85,8 @@ wheels/
 # pyenv
 .python-version
 
-# База данных
-*.parquet
+# Данные
+data/raw/*
+!data/raw/.gitkeep
+data/processing/*
+!data/processing/.gitkeep
