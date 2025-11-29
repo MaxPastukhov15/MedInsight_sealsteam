@@ -16,9 +16,6 @@ def run_pipeline(raw_dir: str, processed_dir: str) -> None:
     os.makedirs(processed_dir, exist_ok=True)
 
     # Конфигурация: (Класс, Входной файл, Выходной файл)
-    """
-    !
-    """
     tasks: List[Tuple[Type[BaseProcessor], str, str]] = [
         (PatientsIntProcessor, "patients.csv", "patients.parquet"),
         (DiagnosesProcessor, "diagnoses.csv", "diagnoses.parquet"),
