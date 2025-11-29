@@ -1,0 +1,66 @@
+import pandas as pd
+from etl.base_processor import BaseProcessor
+from typing import List
+
+
+class DiagnosesProcessor(BaseProcessor):
+    """
+    Процессор справочника диагнозов (МКБ).
+
+    Схема преобразования:
+    - код_мкб           -> diagnosis_code (str)
+    - название_диагноза -> diagnosis_name (str)
+    - класс_заболевания -> disease_class (str)
+
+    Логика обработки:
+    - diagnosis_name, disease_class: Пропуски -> "UNKNOWN".
+    - diagnosis_code: Приводится к верхнему регистру, пробелы удаляются.
+    """
+
+    def validate(self) -> bool:
+        """Строгая проверка схемы."""
+        if self.df is None:
+            return False
+
+        expected_cols = ["код_мкб", "название_диагноза", "класс_заболевания"]
+
+        missing = [col for col in expected_cols if col not in self.df.columns]
+
+        if missing:
+            self.logger.error(f"Неверная структура файла. Отсутствуют колонки: {missing}")
+            return False
+        return True
+
+    def clean(self) -> None:
+        """Очистка и переименование."""
+        if self.df is None:
+            return
+
+        self.logger.info("Стандартизация диагнозов...")
+
+        # 1. Переименование колонок
+        rename_map = {
+            "код_мкб": "diagnosis_code",
+            "название_диагноза": "diagnosis_name",
+            "класс_заболевания": "disease_class",
+        }
+        self.df = self.df.rename(columns=rename_map)
+
+        # 2. Удаление дубликатов и заполнение пропусков
+        self.remove_duplicates()
+        self.fill_text_na(["diagnosis_name", "disease_class"])
+
+        # 3. Очистка ключа (Код МКБ)
+        self.df["diagnosis_code"] = self.df["diagnosis_code"].astype(str).str.strip().str.upper()
+
+        # 4. Очистка текстовых полей (Класс заболевания)
+        self.df["disease_class"] = self.df["disease_class"].astype(str).str.strip()
+
+    def enrich(self) -> None:
+        """Финальная выборка."""
+        if self.df is None:
+            return
+
+        target_cols = ["diagnosis_code", "diagnosis_name", "disease_class"]
+
+        self.df = self.df[target_cols]

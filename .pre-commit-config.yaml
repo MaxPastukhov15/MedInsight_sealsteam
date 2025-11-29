@@ -9,6 +9,7 @@ repos:
     rev: v1.18.2
     hooks:
       - id: mypy
+        language_version: python3.11
         additional_dependencies:
           - pydantic==2.7.4
           - fastapi==0.110.0
