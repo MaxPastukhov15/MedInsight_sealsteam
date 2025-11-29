@@ -29,7 +29,7 @@ def load_data():
 
     script_dir = os.path.dirname(os.path.realpath(__file__))
     parent_dir = os.path.dirname(script_dir)
-    base_path = os.path.join(parent_dir, "Data_preparation")
+    base_path = os.path.join(parent_dir, "data/processed")
 
     try:
         diagnoses = pd.read_parquet(os.path.join(base_path, "diagnoses.parquet"))
@@ -95,7 +95,7 @@ def analyse_disease(year: int,
     df_filtered = prescriptions[mask_disease & mask_year].copy()
     df_filtered['patient_id'] = normalize_id(df_filtered['patient_id'])
 
-    cols_to_use = ['patient_id', 'birth_date_raw', 'gender', 'district']
+    cols_to_use = ['patient_id', 'birth_dt', 'gender', 'district']
 
     # We work on slices/copies to avoid SettingWithCopy warnings on the original DFs
     pat_subset = patients[cols_to_use].copy()
@@ -109,8 +109,8 @@ def analyse_disease(year: int,
     # We use left join to preserve prescription counts even if patient details are missing
     df_merged = pd.merge(df_filtered, pat_subset, on='patient_id', how='left')
 
-    df_merged['birth_date_raw'] = pd.to_datetime(df_merged['birth_date_raw'], dayfirst=True, errors='coerce')
-    df_merged['age'] = df_merged['year'] - df_merged['birth_date_raw'].dt.year
+    df_merged['birth_dt'] = pd.to_datetime(df_merged['birth_dt'], dayfirst=True, errors='coerce')
+    df_merged['age'] = df_merged['year'] - df_merged['birth_dt'].dt.year
     df_merged.loc[(df_merged['age'] < 0) | (df_merged['age'] > 120), 'age'] = None
 
     if district:
