@@ -2,11 +2,11 @@ import os
 import logging
 from typing import List, Tuple, Type
 from etl.base_processor import BaseProcessor
-from etl.processors.patients_int import PatientsIntProcessor
+from etl.processors.patients import PatientsIntProcessor
 from etl.processors.diagnoses import DiagnosesProcessor
 from etl.processors.medications import MedicationsProcessor
 from etl.processors.prescriptions import PrescriptionsProcessor
-from etl.processors.patients_uuid import PatientsUuidProcessor
+# from etl.processors.patients_uuid import PatientsUuidProcessor
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -20,11 +20,11 @@ def run_pipeline(raw_dir: str, processed_dir: str) -> None:
     !
     """
     tasks: List[Tuple[Type[BaseProcessor], str, str]] = [
-        (PatientsIntProcessor, "patients_int.csv", "patients_int.parquet"),
+        (PatientsIntProcessor, "patients.csv", "patients.parquet"),
         (DiagnosesProcessor, "diagnoses.csv", "diagnoses.parquet"),
         (MedicationsProcessor, "medications.csv", "medications.parquet"),
         (PrescriptionsProcessor, "prescriptions.csv", "prescriptions.parquet"),
-        (PatientsUuidProcessor, "patients_uuid.csv", "patients_uuid.parquet"),
+        # (PatientsUuidProcessor, "patients_uuid.csv", "patients_uuid.parquet"),
     ]
 
     logger.info(f"Запуск Pipeline. Raw: {raw_dir} -> Processed: {processed_dir}")
