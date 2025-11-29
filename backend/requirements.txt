@@ -39,6 +39,7 @@ aioredis>=2.0.1                     # Async Redis клиент
 # DATA SCIENCE & TIME SERIES FORECASTING
 # ============================================================================
 pandas>=2.0.0                       # Обработка табличных данных
+pyarrow>=14.0.0                     # Движок для Parquet (Fast I/O)
 numpy>=1.24.0                       # Численные вычисления
 scipy>=1.11.0                       # Статистические функции
 scikit-learn>=1.3.0                 # ML анализ и anomaly detection
