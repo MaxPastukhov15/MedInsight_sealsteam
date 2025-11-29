@@ -28,8 +28,8 @@ def load_data():
     """
 
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    parent_dir = os.path.dirname(script_dir)
-    base_path = os.path.join(parent_dir, "data/processed")
+    base_dir = os.path.dirname(os.path.dirname(script_dir))
+    base_path = os.path.join(base_dir, "data/processed")
 
     try:
         diagnoses = pd.read_parquet(os.path.join(base_path, "diagnoses.parquet"))

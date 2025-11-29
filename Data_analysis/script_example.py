@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import json
 import pandas as pd
 
-from analyse_disease import analyse_disease, load_data
+from analyse.analyse_disease import analyse_disease, load_data
 
 if __name__ == "__main__":
     try:
