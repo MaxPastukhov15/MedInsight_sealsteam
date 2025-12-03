@@ -45,5 +45,4 @@ def run_pipeline(raw_dir: str, processed_dir: str) -> None:
 
 
 if __name__ == "__main__":
-    # Запуск по умолчанию (можно переопределить переменными окружения)
     run_pipeline(os.getenv("RAW_DATA", "data/raw"), os.getenv("PROCESSED_DATA", "data/processed"))

@@ -7,17 +7,17 @@ from etl.processors.prescriptions import PrescriptionsProcessor
 @pytest.fixture
 def raw_prescriptions_df():
     """
-    Грязный датасет рецептов.
-    Сценарии по строкам (индексам):
-    0. rec_1: Идеальная строка -> ОСТАЕТСЯ.
-    1. rec_2: Битая дата (bad-date) -> ОСТАЕТСЯ (дата NaT).
-    2. rec_3: Float ID пациента (400.0) -> ОСТАЕТСЯ (становится '400').
-    3. rec_4: Пропуски в кодах -> ОСТАЕТСЯ (коды UNKNOWN).
-    4. (Пустой): Пустой ID рецепта -> УДАЛЯЕТСЯ.
-    5. rec_trash: Пустой ID пациента -> УДАЛЯЕТСЯ.
+    Dirty prescriptions dataset.
+    Scenarios by rows (indices):
+    0. rec_1: Ideal row -> KEPT.
+    1. rec_2: Broken date (bad-date) -> KEPT (date is NaT).
+    2. rec_3: Float Patient ID (400.0) -> KEPT (becomes '400').
+    3. rec_4: Missing codes -> KEPT (codes become UNKNOWN).
+    4. (Empty): Empty Prescription ID -> REMOVED.
+    5. rec_trash: Empty Patient ID -> REMOVED.
     """
     data = {
-        # 1-я колонка: ID Рецепта
+        # 1st column: Prescription ID
         "id_пациента": ["rec_1", "rec_2", "rec_3", "rec_4", "", "rec_trash"],
         "дата_рецепта": ["2023-01-01", "bad-date", "2023-05-05", "2023-01-01", "2023-01-01", "2023-01-01"],
         "код_диагноза": ["A01", "A01", "A01", None, "A01", "A01"],
@@ -28,7 +28,7 @@ def raw_prescriptions_df():
 
 
 def test_validate_structure_fail():
-    """Проверка валидации: отсутствие обязательных колонок."""
+    """Validation check: missing mandatory columns."""
     proc = PrescriptionsProcessor("dummy.csv")
     proc.df = pd.DataFrame({"col": []})
 
@@ -37,11 +37,11 @@ def test_validate_structure_fail():
 
 def test_clean_filtering_and_logic(raw_prescriptions_df):
     """
-    Проверка логики очистки:
-    1. Удаление строк с пустыми ID.
-    2. Сохранение строк с битыми датами (NaT).
-    3. Исправление формата ID (float string -> int string).
-    4. Заполнение пропусков (UNKNOWN).
+    Cleaning logic check:
+    1. Removal of rows with empty IDs.
+    2. Preservation of rows with broken dates (NaT).
+    3. ID format correction (float string -> int string).
+    4. Filling missing values (UNKNOWN).
     """
     proc = PrescriptionsProcessor("dummy.csv")
     proc.df = raw_prescriptions_df.copy()
@@ -64,7 +64,7 @@ def test_clean_filtering_and_logic(raw_prescriptions_df):
 
 
 def test_clean_text_formatting():
-    """Проверка форматирования текста (upper, strip)."""
+    """Text formatting check (upper, strip)."""
     proc = PrescriptionsProcessor("dummy.csv")
     proc.df = pd.DataFrame(
         {
@@ -83,7 +83,7 @@ def test_clean_text_formatting():
 
 
 def test_enrich_dates():
-    """Проверка генерации дополнительных колонок (year, month)."""
+    """Additional columns generation check (year, month)."""
     proc = PrescriptionsProcessor("dummy.csv")
     proc.df = pd.DataFrame(
         {
