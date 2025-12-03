@@ -3,15 +3,16 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Optional, List, Dict, Any
 
-# Настройка логгера
+# Logger configuration
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
 class BaseProcessor(ABC):
     """
-    Базовый класс для ETL процессоров.
-    Определяет общий интерфейс и логику pipeline.
+    Base class for ETL processors.
+
+    Defines the common interface and pipeline logic.
     """
 
     def __init__(self, input_path: str):
@@ -20,7 +21,7 @@ class BaseProcessor(ABC):
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def load(self) -> pd.DataFrame:
-        """Загрузка данных из CSV"""
+        """Load data from CSV."""
         self.logger.info(f"Загрузка файла: {self.input_path}")
         try:
             self.df = pd.read_csv(self.input_path)
@@ -33,28 +34,31 @@ class BaseProcessor(ABC):
     @abstractmethod
     def validate(self) -> bool:
         """
-        Валидация данных (проверка структуры, критичных пропусков).
-        Должна быть реализована в подклассах.
+        Data validation (structure check, critical missing values).
+
+        Must be implemented in subclasses.
         """
         pass
 
     @abstractmethod
     def clean(self) -> None:
         """
-        Очистка данных (типы, пропуски, дубликаты).
-        Должна быть реализована в подклассах.
+        Data cleaning (types, missing values, duplicates).
+
+        Must be implemented in subclasses.
         """
         pass
 
     def enrich(self) -> None:
         """
-        Обогащение данных (расчет новых признаков).
-        Опциональный шаг.
+        Data enrichment (calculation of new features).
+
+        Optional step.
         """
         pass
 
     def save(self, output_path: str) -> None:
-        """Сохранение результата в Parquet"""
+        """Save result to Parquet."""
         if self.df is None:
             self.logger.warning("Нет данных для сохранения")
             return
@@ -65,42 +69,41 @@ class BaseProcessor(ABC):
 
     def process(self, output_path: str) -> pd.DataFrame:
         """
-        Главный метод запуска пайплайна.
+        Main pipeline execution method.
         """
         self.logger.info("=== Начало обработки ===")
-
         self.load()
-
         if not self.validate():
             raise ValueError("Валидация не пройдена (см. логи)")
 
         self.clean()
         self.enrich()
         self.save(output_path)
-
         self.logger.info("=== Обработка завершена ===\n")
         return self.df
 
     def remove_duplicates(self, subset: Optional[List[str]] = None) -> None:
         """
-        Удаляет полные дубликаты строк.
-        :param subset: Список колонок для проверки (если None - проверяем всю строку целиком).
+        Removes full duplicate rows.
+
+        :param subset: List of columns to check (if None - check the entire row).
         """
-        if self.df is None:  #          в работе...
+        if self.df is None:
             return
 
         start_len = len(self.df)
         self.df = self.df.drop_duplicates(subset=subset, keep="first")
         end_len = len(self.df)
-
         diff = start_len - end_len
+
         if diff > 0:
             self.logger.info(f"Удалено дубликатов: {diff} (Subset: {subset if subset else 'ALL columns'})")
 
     def fill_na(self, defaults: Dict[str, Any]) -> None:
         """
-        Заполняет пропуски в указанных колонках заданными значениями.
-        Пример: {'price': 0.0, 'name': 'Unknown'}f
+        Fills missing values in specified columns with given values.
+
+        Example: {'price': 0.0, 'name': 'Unknown'}
         """
         if self.df is None:
             return
@@ -113,7 +116,7 @@ class BaseProcessor(ABC):
 
     def fill_text_na(self, cols: List[str], value: str = "UNKNOWN") -> None:
         """
-        Заполняет пропуски в текстовых колонках значением (по дефолту 'UNKNOWN').
+        Fills missing values in text columns with a value (default 'UNKNOWN').
         """
         if self.df is None:
             return

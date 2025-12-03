@@ -7,7 +7,7 @@ import logging
 
 
 class MockProcessor(BaseProcessor):
-    """Пустышка для тестирования методов базового класса."""
+    """Mock class for testing base class methods."""
 
     def validate(self) -> bool:
         return True
@@ -21,24 +21,22 @@ class MockProcessor(BaseProcessor):
 
 @pytest.fixture
 def sample_df():
-    """Стандартный грязный датафрейм."""
+    """Standard dirty dataframe."""
     data = {"id": [1, 2, 2, 3], "text": ["A", None, "B", np.nan], "val": [10, 20, 20, 30]}
     return pd.DataFrame(data)
 
 
 @pytest.fixture
 def empty_df():
-    """Пустой датафрейм для проверки граничных случаев."""
+    """Empty dataframe for edge case testing."""
     return pd.DataFrame({"col1": [], "col2": []})
 
 
 def test_remove_duplicates_full_row(sample_df):
-    """Проверка удаления полных дубликатов."""
+    """Test full row duplicate removal."""
     proc = MockProcessor("dummy.csv")
-
     df = pd.DataFrame({"A": [1, 1, 2], "B": ["x", "x", "y"]})
     proc.df = df
-
     proc.remove_duplicates()
 
     assert len(proc.df) == 2
@@ -47,12 +45,10 @@ def test_remove_duplicates_full_row(sample_df):
 
 
 def test_remove_duplicates_subset(sample_df):
-    """Проверка удаления дубликатов по подмножеству колонок (subset)."""
+    """Test duplicate removal by column subset."""
     proc = MockProcessor("dummy.csv")
-
     df = pd.DataFrame({"A": [1, 1, 2], "B": ["x", "z", "y"]})
     proc.df = df
-
     proc.remove_duplicates(subset=["A"])
 
     assert len(proc.df) == 2
@@ -61,11 +57,11 @@ def test_remove_duplicates_subset(sample_df):
 
 
 def test_fill_text_na(sample_df):
-    """Проверка заполнения пропусков (None и NaN) и работы параметра value."""
+    """Test filling missing values (None and NaN) and value parameter functionality."""
     proc = MockProcessor("dummy.csv")
     proc.df = sample_df.copy()
 
-    # Проверяем кастомное значение "EMPTY"
+    # Test custom value "EMPTY"
     proc.fill_text_na(["text"], value="EMPTY")
 
     assert proc.df["text"].isna().sum() == 0
@@ -74,11 +70,11 @@ def test_fill_text_na(sample_df):
 
 
 def test_fill_na_dict(sample_df):
-    """Проверка универсального заполнения и игнорирования чужих колонок."""
+    """Test universal fill and ignoring non-existent columns."""
     proc = MockProcessor("dummy.csv")
     proc.df = sample_df.copy()
-
     proc.df.loc[0, "val"] = np.nan
+
     proc.fill_na({"text": "U", "val": 999, "ghost_col": "fail"})
 
     assert proc.df.iloc[0]["val"] == 999.0
@@ -86,7 +82,7 @@ def test_fill_na_dict(sample_df):
 
 
 def test_methods_on_none_df():
-    """Граничный случай: если self.df is None, методы не должны падать."""
+    """Edge case: if self.df is None, methods should not crash."""
     proc = MockProcessor("dummy.csv")
     proc.df = None
 
@@ -99,7 +95,7 @@ def test_methods_on_none_df():
 
 
 def test_methods_on_empty_df(empty_df):
-    """Граничный случай: пустой DataFrame."""
+    """Edge case: empty DataFrame."""
     proc = MockProcessor("dummy.csv")
     proc.df = empty_df
 
@@ -110,12 +106,11 @@ def test_methods_on_empty_df(empty_df):
 
 
 def test_load_csv_success():
-    """Тест успешной загрузки CSV."""
+    """Test successful CSV loading."""
     proc = MockProcessor("data/test.csv")
 
     with patch("pandas.read_csv") as mock_read:
         mock_read.return_value = pd.DataFrame({"col": [1, 2]})
-
         proc.load()
 
         assert proc.df is not None
@@ -124,7 +119,7 @@ def test_load_csv_success():
 
 
 def test_load_file_not_found():
-    """Тест ошибки при загрузке (файл не найден)."""
+    """Test error handling when file is not found."""
     proc = MockProcessor("ghost.csv")
 
     with patch("pandas.read_csv", side_effect=FileNotFoundError):
@@ -133,26 +128,25 @@ def test_load_file_not_found():
 
 
 def test_save_parquet_success():
-    """Тест сохранения в Parquet."""
+    """Test saving to Parquet."""
     proc = MockProcessor("dummy.csv")
     proc.df = pd.DataFrame({"a": [1]})
 
     with patch.object(pd.DataFrame, "to_parquet") as mock_save:
         proc.save("output.parquet")
-
         mock_save.assert_called_once_with("output.parquet", index=False)
 
 
 def test_process_flow_integration():
     """
-    Тест полного цикла: process().
-    Проверяем, что вызываются load -> validate -> clean -> enrich -> save.
+    Test full pipeline: process().
+    Verify that load -> validate -> clean -> enrich -> save are called.
     """
     proc = MockProcessor("in.csv")
 
-    # Используем MagicMock для подмены методов самого класса
+    # Use MagicMock to substitute class methods
     with patch.object(MockProcessor, "load") as mock_load, patch.object(MockProcessor, "save") as mock_save:
-        # Симулируем успешную загрузку
+        # Simulate successful loading
         proc.df = pd.DataFrame({"a": [1]})
         mock_load.side_effect = lambda: setattr(proc, "df", pd.DataFrame({"a": [1]}))
 
@@ -163,7 +157,7 @@ def test_process_flow_integration():
 
 
 def test_process_stops_on_validation_fail():
-    """Тест остановки пайплайна, если валидация не прошла."""
+    """Test pipeline stops if validation fails."""
     proc = MockProcessor("in.csv")
 
     with (
@@ -179,7 +173,7 @@ def test_process_stops_on_validation_fail():
 
 
 def test_save_no_data(caplog):
-    """Тест сохранения при df = None."""
+    """Test saving when df = None."""
     proc = MockProcessor("dummy.csv")
     proc.df = None
 

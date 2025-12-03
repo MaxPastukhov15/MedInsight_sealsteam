@@ -5,25 +5,24 @@ from typing import List
 
 class DiagnosesProcessor(BaseProcessor):
     """
-    Процессор справочника диагнозов (МКБ).
+    Diagnoses reference processor (ICD).
 
-    Схема преобразования:
-    - код_мкб           -> diagnosis_code (str)
+    Transformation schema:
+    - код_мкб -> diagnosis_code (str)
     - название_диагноза -> diagnosis_name (str)
     - класс_заболевания -> disease_class (str)
 
-    Логика обработки:
-    - diagnosis_name, disease_class: Пропуски -> "UNKNOWN".
-    - diagnosis_code: Приводится к верхнему регистру, пробелы удаляются.
+    Processing logic:
+    - diagnosis_name, disease_class: Missing -> "UNKNOWN".
+    - diagnosis_code: Converted to uppercase, spaces removed.
     """
 
     def validate(self) -> bool:
-        """Строгая проверка схемы."""
+        """Strict schema validation."""
         if self.df is None:
             return False
 
         expected_cols = ["код_мкб", "название_диагноза", "класс_заболевания"]
-
         missing = [col for col in expected_cols if col not in self.df.columns]
 
         if missing:
@@ -32,13 +31,13 @@ class DiagnosesProcessor(BaseProcessor):
         return True
 
     def clean(self) -> None:
-        """Очистка и переименование."""
+        """Cleaning and renaming."""
         if self.df is None:
             return
 
         self.logger.info("Стандартизация диагнозов...")
 
-        # 1. Переименование колонок
+        # 1. Renaming columns
         rename_map = {
             "код_мкб": "diagnosis_code",
             "название_диагноза": "diagnosis_name",
@@ -46,21 +45,20 @@ class DiagnosesProcessor(BaseProcessor):
         }
         self.df = self.df.rename(columns=rename_map)
 
-        # 2. Удаление дубликатов и заполнение пропусков
+        # 2. Key cleaning (ICD Code)
+        self.df["diagnosis_code"] = self.df["diagnosis_code"].astype(str).str.strip().str.upper()
+
+        # 3. Text fields cleaning (Disease class)
+        self.df["disease_class"] = self.df["disease_class"].astype(str).str.strip()
+
+        # 4. Removing duplicates and filling missing values
         self.remove_duplicates()
         self.fill_text_na(["diagnosis_name", "disease_class"])
 
-        # 3. Очистка ключа (Код МКБ)
-        self.df["diagnosis_code"] = self.df["diagnosis_code"].astype(str).str.strip().str.upper()
-
-        # 4. Очистка текстовых полей (Класс заболевания)
-        self.df["disease_class"] = self.df["disease_class"].astype(str).str.strip()
-
     def enrich(self) -> None:
-        """Финальная выборка."""
+        """Final selection."""
         if self.df is None:
             return
 
         target_cols = ["diagnosis_code", "diagnosis_name", "disease_class"]
-
         self.df = self.df[target_cols]
