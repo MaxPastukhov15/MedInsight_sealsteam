@@ -1,0 +1,110 @@
+[
+    {
+        "provider": "openrouter",
+        "model": "amazon/nova-2-lite-v1:free",
+        "api_key_env": "OPENROUTER_API_KEY",
+        "tokens_limit": 1000000
+    },
+    {
+        "provider": "openrouter",
+        "model": "openai/gpt-oss-20b:free",
+        "api_key_env": "OPENROUTER_API_KEY",
+        "tokens_limit": 131072
+    },
+    {
+        "provider": "google",
+        "model": "gemini-2.5-flash",
+        "api_key_env": "GOOGLE_API_KEY",
+        "tokens_limit": 1000000
+    },
+    {
+        "provider": "cohere",
+        "model": "command-a-03-2025",
+        "api_key_env": "COHERE_API_KEY",
+        "tokens_limit": 256000
+    },
+    {
+        "provider": "cohere",
+        "model": "command-a-reasoning-08-2025",
+        "api_key_env": "COHERE_API_KEY",
+        "tokens_limit": 256000
+    },
+    {
+        "provider": "cohere",
+        "model": "command-r-plus-08-2024",
+        "api_key_env": "COHERE_API_KEY",
+        "tokens_limit": 128000
+    },
+    {
+        "provider": "cohere",
+        "model": "command-r-08-2024",
+        "api_key_env": "COHERE_API_KEY",
+        "tokens_limit": 128000
+    },
+    {
+        "provider": "cohere",
+        "model": "command-r7b-12-2024",
+        "api_key_env": "COHERE_API_KEY",
+        "tokens_limit": 128000
+    },
+    {
+        "provider": "groq",
+        "model": "moonshotai/kimi-k2-instruct-0905",
+        "api_key_env": "GROQ_API_KEY",
+        "tokens_limit": 10000
+    },
+    {
+        "provider": "groq",
+        "model": "openai/gpt-oss-120b",
+        "api_key_env": "GROQ_API_KEY",
+        "tokens_limit": 8000
+    },
+    {
+        "provider": "groq",
+        "model": "openai/gpt-oss-20b",
+        "api_key_env": "GROQ_API_KEY",
+        "tokens_limit": 8000
+    },
+    {
+        "provider": "groq",
+        "model": "openai/gpt-oss-safeguard-20b",
+        "api_key_env": "GROQ_API_KEY",
+        "tokens_limit": 8000
+    },
+    {
+        "provider": "google",
+        "model": "gemini-2.5-flash",
+        "api_key_env": "GOOGLE_API_KEY",
+        "tokens_limit": 1000000
+    },
+    {
+        "provider": "google",
+        "model": "gemini-2.5-flash-lite",
+        "api_key_env": "GOOGLE_API_KEY",
+        "tokens_limit": 1000000
+    },
+    {
+        "provider": "google",
+        "model": "gemini-2.5-pro",
+        "api_key_env": "GOOGLE_API_KEY",
+        "tokens_limit": 1000000
+    },
+    {
+        "provider": "gigachat",
+        "model": "GigaChat-2-Max",
+        "api_key_env": "GIGACHAT_API_KEY",
+        "tokens_limit": 128000
+    },
+    {
+        "provider": "gigachat",
+        "model": "GigaChat-2-Pro",
+        "api_key_env": "GIGACHAT_API_KEY",
+        "tokens_limit": 128000
+    },
+    {
+        "provider": "gigachat",
+        "model": "GigaChat-2",
+        "api_key_env": "GIGACHAT_API_KEY",
+        "tokens_limit": 128000
+    }
+]

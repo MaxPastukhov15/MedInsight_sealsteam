@@ -1,0 +1,147 @@
+.steps-trace {
+  margin-bottom: 12px;
+}
+
+.steps-trace-toggle {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.steps-trace-toggle:hover {
+  color: #374151;
+}
+
+.steps-trace-content {
+  margin-top: 8px;
+}
+
+.step-card {
+  background: #f9fafb;
+  border-left: 3px solid #9ca3af;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  border-radius: 0 4px 4px 0;
+  font-size: 13px;
+}
+
+.step-ok {
+  border-left-color: #10b981;
+}
+
+.step-err {
+  border-left-color: #ef4444;
+}
+
+.step-warn {
+  border-left-color: #f59e0b;
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #374151;
+}
+
+.step-title {
+  font-weight: 500;
+}
+
+.step-tool {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.step-duration {
+  margin-left: auto;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.step-label {
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.step-input {
+  margin-top: 6px;
+  color: #6b7280;
+}
+
+.step-input-text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: monospace;
+  font-size: 11px;
+  background: #f3f4f6;
+  padding: 4px 6px;
+  border-radius: 3px;
+  color: #4b5563;
+}
+
+.step-output {
+  margin-top: 6px;
+  color: #4b5563;
+}
+
+.step-output-text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: monospace;
+  font-size: 12px;
+  background: #f3f4f6;
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.step-output-pending {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.step-table-container {
+  overflow-x: auto;
+}
+
+.step-table {
+  border-collapse: collapse;
+  font-size: 12px;
+  width: 100%;
+  background: white;
+}
+
+.step-table th,
+.step-table td {
+  border: 1px solid #e5e7eb;
+  padding: 4px 8px;
+  text-align: left;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.step-table th {
+  background: #f3f4f6;
+  font-weight: 500;
+}
+
+.step-table tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+.step-table-truncated {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 4px;
+  font-style: italic;
+}

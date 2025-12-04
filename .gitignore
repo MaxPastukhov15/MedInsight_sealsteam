@@ -1,29 +1,50 @@
-# .gitignore для dev-архитектуры
-# Игнорировать временные файлы, секреты, виртуальное окружение
-
-# Python virtual environments
-.venv/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
 venv/
 env/
 ENV/
 
-# Python cache и compiled files
-__pycache__
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+package-lock.json
 
-# VS Code
-.vscode/
+# Build outputs
+dist/
+build/
+*.log
 
-# Секреты и env-файлы
+# Environment
 .env
 .env.local
 .env.*.local
 
-# IDE-файлы
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
 .idea/
 *.swp
 *.swo
@@ -32,61 +53,13 @@ __pycache__/
 .classpath
 .settings/
 
-# Тестовые отчёты и coverage
-htmlcov/
-.coverage
-.coverage.*
-.pytest_cache/
-.tox/
-.nox/
-coverage.xml
-*.cover
+# Vite
+.vite/
+.vite-temp/
 
-# Логи и временные файлы
-*.log
+# Data files (large CSVs)
+*.csv
+
+# Temporary
 *.tmp
-*.bak
-*.db
-*.sqlite
-*.sqlite3
-
-# OS файлы
-.DS_Store
-Thumbs.db
-
-# Pre-commit cache
-.pre-commit-framework/
-
-# MyPy cache
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Distribution / packaging
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# Данные
-data/raw/*
-!data/raw/.gitkeep
-data/processing/*
-!data/processing/.gitkeep
+*.temp

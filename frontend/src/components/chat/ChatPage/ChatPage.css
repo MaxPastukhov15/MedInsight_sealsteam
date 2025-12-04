@@ -1,0 +1,22 @@
+.chat-page {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+}
+
+.chat-page.chart-open .chat-window {
+  flex: none;
+  width: 50%;
+  animation: chat-window-shrink 0.35s ease-out forwards;
+}
+
+.chat-page.chart-open .chart-panel {
+  width: 50%;
+}
+
+@keyframes chat-window-shrink {
+  0% { width: 100%; }
+  100% { width: 50%; }
+}

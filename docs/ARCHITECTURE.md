@@ -1,270 +1,199 @@
-# Архитектура проекта
+# Medical Analytics Agent - Architecture
 
-## Общая структура
+## Overview
 
-```
-Medical Analytics AI Agent
-┌──────────────────────────────────────────────┐
-│                 Frontend (React)                      │
-│  - Chat UI                                         │
-│  - Plotly Dashboard                                │
-│  - Insights Cards                                  │
-└─────────────────┬────────────────────────────┘
-                  │ HTTP/REST API
-                  ↓
-┌──────────────────────────────────────────────┐
-│              Backend (FastAPI)                     │
-│  - REST API Endpoints                              │
-│  - Request validation (Pydantic)                   │
-│  - Structured logging                              │
-│  - Rate limiting                                   │
-└─────────────────┬────────────────────────────┘
-                  │
-      ┌───────────┼───────────┐
-      │            │            │
-      ↓            ↓            ↓
-┌─────────┐  ┌─────────┐  ┌─────────┐
-│ LangGraph│  │PostgreSQL│  │ChromaDB │
-│  Agent   │  │ (on VPS) │  │  (RAG)  │
-│  - State │  │  - Data  │  │-Insights│
-│  - Tools │  │  - SQL   │  │-Vectors │
-└─────────┘  └─────────┘  └─────────┘
-      │
-      ↓
-┌──────────────────────────────────────────────┐
-│          LLM ()                │
-│  - Reasoning                                       │
-│  - SQL generation                                  │
-│  - Response formatting                             │
-└──────────────────────────────────────────────┘
-```
+LangGraph-based medical analytics agent with parallel tool calling support.
 
-## Структура проекта
+## Key Features
+
+- **Parallel Tool Calls**: Model can call multiple tools in one response (requires compatible model)
+- **State Persistence**: Codes and SQL are tracked across steps for reuse
+- **Forecast Integration**: Forecast data can be included in charts
+- **SSE Streaming**: Real-time updates to frontend
+
+## Supported Models
+
+| Model | Parallel Tools | Size | Recommended |
+|-------|---------------|------|-------------|
+| `qwen/qwen3-32b` | ✅ 3 tools | 32B | ✅ Yes |
+| `openai/gpt-4o-mini` | ✅ 3 tools | - | ✅ Yes (paid) |
+| `qwen/qwen3-coder-30b-a3b-instruct` | ❌ 1 tool | 30B | No |
+| `meta-llama/llama-3.3-70b-instruct` | ❌ 1 tool | 70B | No |
+
+**Note**: Models without parallel tool support will work but require more LLM calls (slower).
+
+## Architecture
 
 ```
-preparing/
-├── backend/
-│   ├── api/                    # API endpoints
-│   │   ├── __init__.py
-│   │   ├── chat.py            # POST /api/chat
-│   │   └── visualize.py       # GET /api/trends, /api/geo
-│   ├── agent/                  # LangGraph агент
-│   │   ├── __init__.py
-│   │   ├── graph.py           # LangGraph state + nodes
-│   │   ├── tools.py           # SQL tools, forecast tools
-│   │   └── prompts/
-│   │       └── system.md      # System prompt
-│   ├── database/               # База данных
-│   │   ├── __init__.py
-│   │   ├── connection.py      # SQLAlchemy подключение
-│   │   └── models.py          # ORM модели
-│   ├── rag/                    # RAG система
-│   │   ├── __init__.py
-│   │   ├── chromadb_client.py # ChromaDB клиент
-│   │   └── retriever.py       # Поиск инсайтов
-│   ├── services/               # Бизнес-логика
-│   │   ├── __init__.py
-│   │   ├── llm.py             # LLM service with retry
-│   │   └── analytics.py       # Функции анализа
-│   ├── schemas/                # Pydantic схемы
-│   │   ├── __init__.py
-│   │   ├── chat.py            # ChatRequest, ChatResponse
-│   │   └── analytics.py       # TrendsRequest, GeoRequest
-│   ├── scripts/                # Утилиты
-│   │   ├── load_data.py       # Загрузка CSV → PostgreSQL
-│   │   └── generate_insights.py # Генерация insights.json
-│   ├── config/                 # Конфигурация
-│   │   ├── __init__.py
-│   │   └── settings.py        # Pydantic Settings
-│   ├── tests/                  # Тесты
-│   │   ├── test_api.py
-│   │   ├── test_agent.py
-│   │   └── test_database.py
-│   ├── .env.example           # Шаблон переменных
-│   ├── requirements.txt       # Python зависимости
-│   ├── requirements-ci.txt    # Dev tools
-│   └── main.py                # Точка входа
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Chat/
-│   │   │   └── Dashboard/
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── package.json
-│   └── vite.config.js
-├── data/                       # Данные (не коммитим)
-│   ├── raw/                    # Исходные CSV
-│   ├── insights.json           # Найденные инсайты
-│   └── chroma/                 # ChromaDB хранилище
-├── docs/
-│   ├── ARCHITECTURE.md         # Этот файл
-│   └── DATABASE_SETUP.md       # Инструкция по БД
-├── docker-compose.yml          # Docker для локальной разработки
-├── Makefile                    # Команды разработки
-├── .gitignore
-└── README.md
+┌─────────────────────────────────────────────────────────────┐
+│                        Frontend                              │
+│                    (React + Plotly)                          │
+└─────────────────────┬───────────────────────────────────────┘
+                      │ SSE Stream
+                      ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     api.py (FastAPI)                         │
+│  POST /chat/stream  │  POST /chat/history  │  GET /health   │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    graph.py (LangGraph)                      │
+│  ┌─────────┐    ┌─────────┐    ┌──────────┐                 │
+│  │  agent  │───▶│  tools  │───▶│ finalize │                 │
+│  └─────────┘    └─────────┘    └──────────┘                 │
+│       │              │                                       │
+│       │   ┌──────────┴──────────┐                           │
+│       │   │   State Tracking    │                           │
+│       │   │  - found_codes      │                           │
+│       │   │  - last_sql         │                           │
+│       │   │  - visualization    │                           │
+│       │   └─────────────────────┘                           │
+└───────┼─────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     tools.py                                 │
+│  ┌──────────────┐  ┌─────────┐  ┌────────────────┐          │
+│  │ search_codes │  │ run_sql │  │ forecast_trend │          │
+│  └──────────────┘  └─────────┘  └────────────────┘          │
+│  ┌──────────────┐                                           │
+│  │ create_chart │                                           │
+│  └──────────────┘                                           │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   database.py (DuckDB)                       │
+│  patients │ prescriptions │ diagnoses │ drugs               │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## Поток данных
+## Execution Flow
 
-### 1. Пользователь задаёт вопрос
-```
-Пользователь: "Покажи тренд по гриппу"
-     ↓
-Frontend (React)
-     ↓ POST /api/chat
-Backend (FastAPI)
-     ↓
-LangGraph Agent
-```
+### With Parallel Tool Calls (qwen3-32b, gpt-4o-mini)
 
-### 2. Агент обрабатывает вопрос
 ```
-LangGraph Agent:
-  1. Node: RAG Retrieval
-     ↓ Поиск инсайтов в ChromaDB
-     ↓ "Найден: Пик простуд в октябре"
-     
-  2. Node: SQL Planner
-     ↓ LLM генерирует SQL
-     ↓ "SELECT date_trunc('month', date), COUNT(*) FROM disease_cases WHERE disease='грипп' GROUP BY 1"
-     
-  3. Node: SQL Executor
-     ↓ Выполнение SQL в PostgreSQL
-     ↓ [{"2024-01": 100}, {"2024-02": 120}, ...]
-     
-  4. Node: Responder
-     ↓ LLM форматирует ответ
-     ↓ "Тренд по гриппу: пик в октябре (120 случаев). Согласно инсайту #3..."
+User: "тренд диабета по месяцам с прогнозом"
+        │
+        ▼
+   LLM Call #1
+        │
+        ▼
+   search_codes("диабет")
+        │
+        ▼
+   LLM Call #2 (sees codes)
+        │
+        ├──▶ run_sql(...)
+        ├──▶ forecast_trend(...)
+        └──▶ create_chart(...)
+        │
+        ▼
+   LLM Call #3
+        │
+        ▼
+   Final Answer + Chart
+
+Total: 3 LLM calls, ~15-25 seconds
 ```
 
-### 3. Ответ пользователю
+### Without Parallel Tool Calls (other models)
+
 ```
-Backend → Frontend
-     ↓
-Пользователь видит:
-  - Текстовый ответ
-  - График трендов (Plotly)
-  - Источники ("Инсайт #3")
-```
+User: "тренд диабета по месяцам с прогнозом"
+        │
+        ▼
+   LLM Call #1 → search_codes
+   LLM Call #2 → run_sql
+   LLM Call #3 → forecast_trend
+   LLM Call #4 → create_chart
+   LLM Call #5 → Final Answer
 
-## Технологии
-
-### Backend
-- **FastAPI** - async REST API
-- **SQLAlchemy** - ORM для PostgreSQL
-- **LangChain** - LLM оркестрация
-- **LangGraph** - agentic workflows
-- **ChromaDB** - vector database для RAG
-- **Pandas** - обработка данных
-- **Prophet** - прогнозирование (опционально)
-- **Structlog** - структурированное логирование
-
-### Frontend
-- **React** - UI фреймворк
-- **Plotly.js** - интерактивные графики
-- **Tailwind CSS** - стилизация
-
-### Infrastructure
-- **PostgreSQL** - на VPS (1GB RAM, 10GB storage)
-- **Docker** - локальная разработка
-- **Render/Railway** - backend deploy
-- **Vercel** - frontend deploy
-
-## API Endpoints
-
-### Chat
-```
-POST /api/chat
-Request:
-{
-  "message": "Покажи тренд по гриппу",
-  "session_id": "user123"
-}
-
-Response:
-{
-  "response": "Тренд по гриппу: пик в октябре...",
-  "sources": ["insight_3"],
-  "confidence": 0.92,
-  "visualization": {
-    "type": "line_chart",
-    "data": [...]
-  }
-}
+Total: 5 LLM calls, ~40-60 seconds
 ```
 
-### Visualization
-```
-GET /api/trends?disease=грипп&period=12m
-Response:
-{
-  "data": [
-    {"month": "2024-01", "cases": 100},
-    {"month": "2024-02", "cases": 120}
-  ]
-}
+## State Management
 
-GET /api/geo?disease=диабет
-Response:
-{
-  "data": [
-    {"district": "Центральный", "cases": 250},
-    {"district": "Приморский", "cases": 180}
-  ]
-}
+### MedicalAgentState
+
+```python
+class MedicalAgentState(AgentState):
+    visualization_json: Optional[Dict]  # Plotly chart JSON
+    final_response: Optional[Dict]      # Final answer
+    step_count: int                     # Current step
+    found_codes: List[str]              # Accumulated diagnosis/drug codes
+    last_sql: Optional[str]             # Last successful SQL for reuse
 ```
 
-## Безопасность
+### Special Features
 
-### SQL Injection Protection
-- Использовать SQLAlchemy ORM
-- Параметризованные запросы
-- Валидация SQL агента: только SELECT
+#### {CODES} Placeholder
+SQL can use `{CODES}` which gets replaced with found codes:
+```sql
+SELECT * FROM prescriptions WHERE diagnosis_code IN ({CODES})
+-- Becomes:
+SELECT * FROM prescriptions WHERE diagnosis_code IN ('E10', 'E11', 'E14')
+```
 
-### API Security
-- CORS: только доверенные origins
-- Rate limiting: 60 запросов/минуту
-- Input validation: Pydantic схемы
+#### REUSE_SQL
+Tools can specify `sql="REUSE_SQL"` to reuse the last successful SQL:
+```python
+create_chart(sql="REUSE_SQL", chart_type="bar", ...)
+```
 
-### VPS Security
-- Firewall: только 5432 порт для PostgreSQL
-- Strong passwords
-- SSL/TLS для production (опционально)
+#### include_forecast
+Charts can include forecast data from previous `forecast_trend` call:
+```python
+create_chart(..., include_forecast=True)
+```
 
-## Production Deploy
+## Configuration
 
-### Backend (Render/Railway)
+### Environment Variables (.env)
+
 ```bash
-# Environment variables:
-DATABASE_URL=postgresql://med_user:pass@vps_ip:5432/medical_analytics
-OPENAI_API_KEY=sk-...
-LANGCHAIN_API_KEY=lsv2_...
+# Required
+OPENROUTER_API_KEY=sk-or-v1-xxx
+
+# Model selection
+MODEL_NAME=qwen/qwen3-32b
+
+# Agent limits
+MAX_STEPS=15
+MAX_RETRIES=3
 ```
 
-### Frontend (Vercel)
-```bash
-# Environment variables:
-VITE_API_URL=https://your-backend.render.com
-```
+## Files
 
-## Monitoring
+| File | Purpose |
+|------|---------|
+| `backend/graph.py` | LangGraph agent, system prompt, orchestration |
+| `backend/tools.py` | Tool definitions (search_codes, run_sql, forecast_trend, create_chart) |
+| `backend/api.py` | FastAPI endpoints, SSE streaming |
+| `backend/state.py` | Agent state definition |
+| `backend/database.py` | DuckDB connection and FTS indexing |
+| `backend/config.py` | Logging configuration |
 
-### Метрики (Prometheus)
-- Request latency (p50, p95, p99)
-- Error rate
-- Database connection pool
-- LLM API calls
+## Adding New Tools
 
-### Логи (Structlog)
-- Request/Response logging
-- Agent decision traces
-- SQL query logging
-- Error tracking
+See [TOOLS.md](./TOOLS.md) for detailed guide on creating new tools.
 
-### LangSmith
-- Agent traces
-- LLM calls
-- Tool usage
-- Debug playground
+## Troubleshooting
+
+### Model doesn't call multiple tools
+- Check if model supports parallel tool calls (see table above)
+- Verify `parallel_tool_calls=True` in `bind_tools()`
+
+### Charts not created
+- System prompt must emphasize chart creation
+- Check if `create_chart` is in the tool calls
+
+### Slow responses
+- Use a model with parallel tool support
+- Check OpenRouter rate limits
+
+### SQL errors
+- Verify column names match schema
+- Use `DATE_TRUNC('month', ...)` for time grouping
+- Use `DATE_DIFF('year', birth_date, CURRENT_DATE)` for age

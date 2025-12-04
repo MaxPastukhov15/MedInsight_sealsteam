@@ -1,0 +1,36 @@
+
+services:
+
+  frontend:
+    build:
+      context: .
+      dockerfile: services/Dockerfile.frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - medinsight-net
+
+  backend:
+    build:
+      context: .
+      dockerfile: services/Dockerfile.backend
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    
+    environment:
+      # Example environment variable, adjust as needed
+      FRONTEND_URL: http://localhost:80
+    
+    volumes:
+      - ./data:/app/data
+
+    networks:
+      - medinsight-net
+
+networks:
+  medinsight-net:
+    driver: bridge

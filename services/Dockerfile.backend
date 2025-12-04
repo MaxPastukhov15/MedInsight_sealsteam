@@ -1,0 +1,24 @@
+# Dockerfile
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Устанавливаем зависимости ОС
+RUN apt-get update && apt-get install -y --no-install-recommends gcc && rm -rf /var/lib/apt/lists/*
+
+# Копируем зависимости
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Копируем весь проект
+COPY . .
+
+# Даём права на запись в /data
+RUN chmod -R 777 /app/data
+
+# Порт
+EXPOSE 8000
+
+# Запуск
+CMD ["uvicorn", "backend.api:app", "--host", "0.0.0.0", "--port", "8000"]
