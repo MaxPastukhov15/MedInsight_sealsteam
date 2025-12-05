@@ -49,9 +49,9 @@ class TestAnalyseDisease:
             patients=sample_patients,
             disease_code='J10'
         )
-        
+
         result = json.loads(result_json)
-        
+
         # Verify structure
         assert 'meta' in result
         assert 'total_cases' in result
@@ -59,17 +59,17 @@ class TestAnalyseDisease:
         assert 'growth_rate_percent' in result
         assert 'demographics' in result
         assert 'top_districts' in result
-        
+
         # Verify meta information
         assert result['meta']['analysis_year'] == 2023
         assert result['meta']['disease_target'] == 'Influenza'
         assert result['meta']['target_type'] == 'code'
         assert result['meta']['district_filter'] == 'All'
-        
+
         # Verify calculations (J10 appears 2 times in 2023: patient 1 and patient 4)
         assert result['total_cases'] == 2
         assert result['incidence_per_100k'] > 0
-        
+
         # Verify file identifier
         assert file_id == 'J10'
 
@@ -82,22 +82,22 @@ class TestAnalyseDisease:
             patients=sample_patients,
             disease_name='Influenza'
         )
-        
+
         result = json.loads(result_json)
-        
+
         # Verify meta information
         assert result['meta']['disease_target'] == 'Influenza'
         assert result['meta']['target_type'] == 'name_search'
-        
+
         # Should match J10, J10.1, and J11 (all containing 'Influenza')
         # Total cases: patient 1 (J10), patient 2 (J10.1), patient 3 (J11), patient 4 (J10) = 4
         assert result['total_cases'] == 4
-        
+
         # Verify demographics structure
         assert 'sex_distribution' in result['demographics']
         assert 'age_stats' in result['demographics']
         assert 'age_groups' in result['demographics']
-        
+
         # Verify file identifier is sanitized disease name
         assert file_id == 'Influenza'
 
@@ -111,15 +111,15 @@ class TestAnalyseDisease:
             disease_code='J10',
             district='District A'
         )
-        
+
         result = json.loads(result_json)
-        
+
         # Verify district filter in meta
         assert result['meta']['district_filter'] == 'District A'
-        
+
         # J10 in 2023: patient 1 (District A) and patient 4 (District A) = 2 cases
         assert result['total_cases'] == 2
-        
+
         # Verify population count is filtered
         # District A has patients: 1, 3, 4 (3 patients total)
         assert result['incidence_per_100k'] > 0
@@ -328,6 +328,6 @@ class TestNormalizeId:
         """Test 11f: normalize_id handles empty series"""
         series = pd.Series([], dtype=object)
         result = normalize_id(series)
-        
+
         assert len(result) == 0
         assert result.dtype == object

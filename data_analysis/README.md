@@ -13,7 +13,7 @@ erDiagram
     patients ||--o{ prescriptions : ""
     medications ||--o{ prescriptions : ""
     diagnoses ||--o{ prescriptions : ""
-    
+
     patients {
         VARCHAR patient_id PK
         TIMESTAMP_NS birth_dt
@@ -22,7 +22,7 @@ erDiagram
         VARCHAR district
         VARCHAR region
     }
-    
+
     medications {
         VARCHAR drug_id PK
         VARCHAR trade_name
@@ -30,13 +30,13 @@ erDiagram
         VARCHAR dosage
         DOUBLE price
     }
-    
+
     diagnoses {
         VARCHAR diagnosis_code PK
         VARCHAR diagnosis_name
         VARCHAR disease_class
     }
-    
+
     prescriptions {
         VARCHAR prescription_id PK
         VARCHAR patient_id FK
