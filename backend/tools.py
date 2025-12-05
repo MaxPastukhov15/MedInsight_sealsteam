@@ -140,21 +140,22 @@ def forecast_trend(
 def create_visualization(code: str) -> str:
     """Execute Python code to create a Plotly visualization.
 
+    IMPORTANT: There is NO pre-existing 'df' variable! You MUST fetch data first using db.execute().
+
     Available variables:
     - db: Database instance with db.execute(sql) -> (df, err)
-    - pd: pandas
-    - px: plotly.express
-    - go: plotly.graph_objects
-    - np: numpy
+    - pd, px, go, np: pandas, plotly.express, plotly.graph_objects, numpy
     - forecast_df: DataFrame from last forecast_trend call (columns: date, predicted, lower_bound, upper_bound)
-    - datetime, timedelta: from datetime module
-    - json: json module
+    - datetime, timedelta, json
 
-    The code MUST assign the final figure to variable `fig`.
+    REQUIRED: Assign final figure to variable `fig`.
 
-    Example:
-        df, _ = db.execute("SELECT district, COUNT(*) as cnt FROM patients GROUP BY district")
+    CORRECT example:
+        df, err = db.execute("SELECT district, COUNT(*) as cnt FROM patients GROUP BY district")
         fig = px.bar(df, x='district', y='cnt', title='Patients by District')
+
+    WRONG (will fail with 'df is not defined'):
+        fig = px.bar(df, x='district', y='cnt')  # ERROR: df does not exist!
     """
     global _last_chart, _last_forecast
 

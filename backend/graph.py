@@ -68,13 +68,24 @@ SELECT DATE_TRUNC('day', date) AS date, COUNT(*) AS cases
 FROM prescriptions WHERE diagnosis_code IN ({CODES}) AND date IS NOT NULL GROUP BY 1 ORDER BY 1
 
 ВИЗУАЛИЗАЦИЯ (create_visualization):
-Доступны: db, pd, px, go, np, forecast_df
-Пример ТОЛЬКО прогноза (без исторических данных):
+ВАЖНО: Переменная 'df' НЕ существует! Сначала получи данные через db.execute()!
+Доступны: db, pd, px, go, np, forecast_df (только после forecast_trend)
+
+ПРАВИЛЬНО:
+```
+df, err = db.execute("SELECT district, COUNT(*) as cnt FROM patients GROUP BY district")
+fig = px.bar(df, x='district', y='cnt', title='Пациенты по районам')
+```
+
+НЕПРАВИЛЬНО (ошибка 'df is not defined'):
+```
+fig = px.bar(df, x='district', y='cnt')  # ОШИБКА: df не существует!
+```
+
+Пример прогноза (forecast_df доступен после вызова forecast_trend):
 ```
 fig = go.Figure()
 fig.add_scatter(x=forecast_df['date'], y=forecast_df['predicted'], mode='lines', name='Прогноз')
-fig.add_scatter(x=forecast_df['date'], y=forecast_df['upper_bound'], mode='lines', line=dict(dash='dash'), name='Верхняя граница')
-fig.add_scatter(x=forecast_df['date'], y=forecast_df['lower_bound'], mode='lines', line=dict(dash='dash'), name='Нижняя граница')
 fig.update_layout(title='Прогноз')
 ```
 
