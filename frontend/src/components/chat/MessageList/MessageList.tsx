@@ -32,17 +32,17 @@ const MessageList = () => {
       )}
       {currentChat && currentChat.messages.map((message) => (
         message.role === 'user' ? (
-          <UserMessage 
-            key={message.id} 
-            text={message.text} 
-            timestamp={message.timestamp} 
+          <UserMessage
+            key={message.id}
+            text={message.text}
+            timestamp={message.timestamp}
           />
         ) : (
-          <AgentMessage 
-            key={message.id} 
+          <AgentMessage
+            key={message.id}
             id={message.id}
-            text={message.text} 
-            timestamp={message.timestamp} 
+            text={message.text}
+            timestamp={message.timestamp}
             chart={message.chart}
             plotlyData={message.plotlyData}
             steps={message.steps}

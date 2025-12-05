@@ -13,7 +13,7 @@ interface UIState {
   selectedChartMessageId: string | null;
   isAboutModalOpen: boolean;
   isSettingsModalOpen: boolean;
-  
+
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
   setSidebarWidth: (width: number) => void;
@@ -42,7 +42,7 @@ export const useUIStore = create<UIState>()(
       selectedChartMessageId: null,
       isAboutModalOpen: false,
       isSettingsModalOpen: false,
-      
+
       toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
       setSidebarOpen: (open) => set({ isSidebarOpen: open }),
       setSidebarWidth: (width) => set({ sidebarWidth: width }),

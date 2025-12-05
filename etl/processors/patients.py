@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 from etl.base_processor import BaseProcessor
-from typing import List
 
 
 class PatientsIntProcessor(BaseProcessor):
@@ -89,7 +88,7 @@ class PatientsIntProcessor(BaseProcessor):
 
         # 3. Exact age
         now = datetime.now()
-        self.df["age"] = (now - self.df["birth_dt"]) / pd.Timedelta(days=365.25)
+        self.df["age"] = (now - self.df["birth_dt"]) / pd.Timedelta(days=365.25)  # type: ignore
         self.df["age"] = self.df["age"].fillna(0).astype(int)
 
         # 4. Outlier filtering

@@ -1,6 +1,6 @@
 # SPBTrueTech project contributing guide
 
-## How to Contribute 
+## How to Contribute
 
 Follow these steps to get started. We use the Forking Workflow model.
 
@@ -44,7 +44,7 @@ Now your environment is ready. The hooks will run automatically every time you r
 
 ### 4. Make and Commit Changes
 
-Work on the code in your new branch. When you're ready to save your changes, create a commit. 
+Work on the code in your new branch. When you're ready to save your changes, create a commit.
 Use the following types:
 
 - `feat`: to add new functionality.

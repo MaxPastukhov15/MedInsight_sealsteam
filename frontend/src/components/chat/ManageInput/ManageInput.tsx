@@ -42,7 +42,7 @@ const ManageInput = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessageText(e.target.value);
-    
+
     if (!e.target.value.trim()) {
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
@@ -80,9 +80,9 @@ const ManageInput = () => {
   return (
     <div className="manage-input" ref={inputRef}>
       <div className="input-container">
-        <textarea 
+        <textarea
           ref={textareaRef}
-          placeholder="Type a message..." 
+          placeholder="Type a message..."
           className="message-input"
           value={messageText}
           onChange={handleChange}
@@ -91,7 +91,7 @@ const ManageInput = () => {
           rows={1}
           style={{ resize: 'none' }}
         />
-        <button 
+        <button
           className="send-button"
           onClick={handleSendMessage}
           disabled={isLoading || !messageText.trim()}

@@ -138,9 +138,9 @@ async function sendMessage(query, threadId = null) {
 
     for (const line of lines) {
       if (!line.startsWith('data: ')) continue;
-      
+
       const data = JSON.parse(line.substring(6));
-      
+
       switch (data.type) {
         case 'step':
           console.log(`Step ${data.step}: ${data.tool}`);

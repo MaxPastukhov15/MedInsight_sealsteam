@@ -1,63 +1,66 @@
 [build-system]
-requires = ["setuptools>=68.0"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 
-[project]
+[tool.poetry]
 name = "medical-analytics-agent"
 version = "1.0.0"
 description = "Medical Analytics AI-Agent for SpbTechRun 2025"
+authors = ["sealsteam"]
 readme = "README.md"
-requires-python = ">=3.11"
-authors = [
-    {name = "Team"}
-]
+license = "MIT"
+homepage = "https://github.com/MaxPastukhov15/preparing"
+repository = "https://github.com/MaxPastukhov15/preparing"
+keywords = []
+classifiers = []
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+pandas = ">=2.0.0"
+numpy = ">=1.24.0"
+plotly = ">=5.18.0"
+langchain-core = ">=0.2.0"
+langchain-openai = ">=0.1.0"
+langgraph = ">=0.1.0"
+duckdb = ">=1.0.0"
+pydantic = ">=2.5.0"
+pydantic-settings = ">=2.0.0"
+python-dotenv = ">=1.0.0"
+fastapi = ">=0.100.0"
+
+[tool.poetry.group.dev.dependencies]
+ruff = ">=0.5.0"
+mypy = ">=1.10.0"
+pre-commit = ">=3.5.0"
+pytest = ">=8.0.0"
 
 # Ruff configuration
 [tool.ruff]
-# Global options
 line-length = 120
-target-version = "py311"
-
-[tool.ruff.lint]
-select = ["E"]
-ignore = ["E501", "I001"]
+output-format = "grouped"
+src = ["backend", "etl"]
+exclude = ["*.ipynb"]
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "auto"
+docstring-code-format = true
+
+[tool.ruff.lint]
+ignore = ["PLR0913"]
+
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
+files = ["backend", "etl"]
 strict = false
 ignore_missing_imports = true
 
 # Pytest configuration
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-ra -q --strict-markers --cov=backend --cov=etl --cov-report=html --cov-report=xml --cov-report=term-missing"
 testpaths = ["backend/tests", "etl/tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-
-# Coverage configuration
-[tool.coverage.run]
-source = ["backend", "etl"]
-omit = [
-    "*/tests/*",
-    "*/__init__.py",
-    "*/conftest.py",
-]
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
-    "@abstractmethod",
-]

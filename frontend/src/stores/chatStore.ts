@@ -37,7 +37,7 @@ interface ChatState {
   chats: Chat[];
   currentChatId: string | null;
   isLoading: boolean;
-  
+
   createChat: (title?: string) => string;
   deleteChat: (chatId: string) => void;
   setCurrentChat: (chatId: string | null) => void;
@@ -91,22 +91,22 @@ export const useChatStore = create<ChatState>((set, get) => ({
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    
+
     set(state => ({
       chats: [newChat, ...state.chats],
       currentChatId: newChat.id,
     }));
-    
+
     return newChat.id;
   },
 
   deleteChat: (chatId) => {
     set(state => {
       const newChats = state.chats.filter(chat => chat.id !== chatId);
-      const newCurrentChatId = state.currentChatId === chatId 
+      const newCurrentChatId = state.currentChatId === chatId
         ? (newChats.length > 0 ? newChats[0].id : null)
         : state.currentChatId;
-      
+
       return {
         chats: newChats,
         currentChatId: newCurrentChatId,
@@ -124,9 +124,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       id: genMsgId(),
       timestamp: new Date(),
     };
-    
+
     set(state => ({
-      chats: state.chats.map(chat => 
+      chats: state.chats.map(chat =>
         chat.id === chatId
           ? {
               ...chat,
@@ -136,17 +136,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
           : chat
       ),
     }));
-    
+
     return newMessage.id;
   },
 
   updateMessage: (chatId, messageId, updates) => {
     set(state => ({
-      chats: state.chats.map(chat => 
+      chats: state.chats.map(chat =>
         chat.id === chatId
           ? {
               ...chat,
-              messages: chat.messages.map(msg => 
+              messages: chat.messages.map(msg =>
                 msg.id === messageId ? { ...msg, ...updates } : msg
               ),
               updatedAt: new Date(),
@@ -158,7 +158,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   deleteMessage: (chatId, messageId) => {
     set(state => ({
-      chats: state.chats.map(chat => 
+      chats: state.chats.map(chat =>
         chat.id === chatId
           ? {
               ...chat,
@@ -172,7 +172,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   clearChat: (chatId) => {
     set(state => ({
-      chats: state.chats.map(chat => 
+      chats: state.chats.map(chat =>
         chat.id === chatId
           ? { ...chat, messages: [], threadId: undefined, updatedAt: new Date() }
           : chat
@@ -244,13 +244,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
         const chunk = decoder.decode(value, { stream: true });
         const lines = chunk.split('\n');
-        
+
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
-          
+
           try {
             const data = JSON.parse(line.substring(6));
-            
+
             if (data.type === 'step') {
               // New step - add it with input (tool name and any thought)
               const step: Step = {
@@ -263,11 +263,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
               };
               steps.push(step);
               currentStepIdx = steps.length - 1;
-              
+
               // Update message with new step immediately
               updateMessage(chatId!, agentMsgId, { steps: [...steps] });
             }
-            
+
             if (data.type === 'tool_result') {
               // Update current step with output
               if (currentStepIdx >= 0 && steps[currentStepIdx]) {
@@ -275,7 +275,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
                 updateMessage(chatId!, agentMsgId, { steps: [...steps] });
               }
             }
-            
+
             if (data.type === 'visualization' && data.data) {
               plotlyData = data.data;
               // Add visualization step
@@ -289,7 +289,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
               });
               updateMessage(chatId!, agentMsgId, { steps: [...steps], plotlyData });
             }
-            
+
             if (data.type === 'final') {
               finalAnswer = extractAnswer(data.answer);
               if (data.visualization && !plotlyData) {
@@ -299,7 +299,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
                 threadId = data.thread_id;
               }
             }
-            
+
             if (data.type === 'error') {
               finalAnswer = `Error: ${data.message}`;
               steps.push({
@@ -320,10 +320,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
 
       // Final update with answer and plotly data
-      updateMessage(chatId!, agentMsgId, { 
-        text: finalAnswer || 'Response received', 
+      updateMessage(chatId!, agentMsgId, {
+        text: finalAnswer || 'Response received',
         plotlyData,
-        steps: steps.length > 0 ? steps : undefined 
+        steps: steps.length > 0 ? steps : undefined
       });
 
     } catch (error) {

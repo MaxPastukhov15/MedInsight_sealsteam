@@ -63,3 +63,10 @@ Desktop.ini
 # Temporary
 *.tmp
 *.temp
+
+# Docker
+
+.dockerignore
+
+# files
+STRUCTURE.txt

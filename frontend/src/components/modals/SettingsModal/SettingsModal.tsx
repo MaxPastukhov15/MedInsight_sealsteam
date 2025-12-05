@@ -16,7 +16,7 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
           <Dialog.Description className="DialogDescription">
             Customize the application according to your preferences
           </Dialog.Description>
-          
+
           <div className="settings-content">
             <div className="settings-section">
               <h3>Appearance</h3>
@@ -36,7 +36,7 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                 </select>
               </div>
             </div>
-            
+
             <div className="settings-section">
               <h3>Chat</h3>
               <div className="setting-item">
@@ -56,7 +56,7 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               </div>
             </div>
           </div>
-          
+
           <div className="dialog-actions">
             <button className="primary-button" onClick={onClose}>
               Save Changes
@@ -65,7 +65,7 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               Cancel
             </button>
           </div>
-          
+
           <Dialog.Close asChild>
             <button className="IconButton" aria-label="Close">
               ✕

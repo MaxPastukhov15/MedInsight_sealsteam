@@ -67,7 +67,7 @@ class BaseProcessor(ABC):
         self.df.to_parquet(output_path, index=False)
         self.logger.info("Успешно сохранено")
 
-    def process(self, output_path: str) -> pd.DataFrame:
+    def process(self, output_path: str) -> Optional[pd.DataFrame]:
         """
         Main pipeline execution method.
         """

@@ -16,7 +16,7 @@ const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
           <Dialog.Description className="DialogDescription">
             Information about the application
           </Dialog.Description>
-          
+
           <div className="about-content">
             <div className="about-logo">
               <img src="/Sealsteam_l.svg" alt="SealSteam" className="about-logo-image" />
@@ -26,7 +26,7 @@ const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
               <h2>Medical Analytics AI-Agent</h2>
               <p>Version: 0.5.0</p>
               <p>AI assistant based on Large Language Model (LLM) technology for analyzing medical data from St. Petersburg and providing insights.</p>
-              
+
               <div className="about-features">
                 <h3>Key Features:</h3>
                 <ul>
@@ -36,14 +36,14 @@ const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
                   <li>Interactive chat interface</li>
                 </ul>
               </div>
-              
+
               <div className="about-tech">
                 <h3>Technologies:</h3>
                 <p>React, TypeScript, Zustand, Radix UI</p>
               </div>
             </div>
           </div>
-          
+
           <Dialog.Close asChild>
             <button className="IconButton" aria-label="Close">
               ✕

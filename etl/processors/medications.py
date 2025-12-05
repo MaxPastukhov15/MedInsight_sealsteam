@@ -1,6 +1,5 @@
 import pandas as pd
 from etl.base_processor import BaseProcessor
-from typing import List
 
 
 class MedicationsProcessor(BaseProcessor):

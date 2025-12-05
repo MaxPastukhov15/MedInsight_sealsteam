@@ -16,7 +16,7 @@ const ChartPanel = () => {
 
     const currentChat = getCurrentChat();
     const msg = currentChat?.messages.find(m => m.id === selectedChartMessageId);
-    
+
     if (isChartOpen && msg) {
       // Check for full Plotly JSON from backend
       if (msg.plotlyData) {

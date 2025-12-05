@@ -1,0 +1,52 @@
+name: docker compose check
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  docker-up:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Compose
+        run: |
+          DOCKER_COMPOSE_VERSION=v2.23.0
+          curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
+      - name: Create .env if needed
+        run: |
+          if [ -f .env.example ]; then
+            cp .env.example .env
+          fi
+
+      - name: Start services with docker-compose
+        run: |
+          docker-compose up --build -d
+
+      - name: Wait and verify containers are running
+        run: |
+          sleep 5
+          if ! docker-compose ps | grep -q "Up"; then
+            echo "Containers not running"
+            docker-compose logs
+            exit 1
+          fi
+          if docker-compose ps | grep -q "Exit"; then
+            echo "Some containers exited"
+            docker-compose logs
+            exit 1
+          fi
+          echo "All containers running"
+
+      - name: Clean up
+        if: always()
+        run: |
+          docker-compose down --remove-orphans --volumes

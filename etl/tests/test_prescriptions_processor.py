@@ -1,6 +1,5 @@
 import pytest
 import pandas as pd
-import numpy as np
 from etl.processors.prescriptions import PrescriptionsProcessor
 
 
@@ -59,8 +58,8 @@ def test_clean_filtering_and_logic(raw_prescriptions_df):
     assert "." not in row_3["patient_id"]
 
     row_4 = proc.df[proc.df["prescription_id"] == "rec_4"].iloc[0]
-    assert row_4["diagnosis_code"] == "UNKNOWN"
-    assert row_4["drug_id"] == "UNKNOWN"
+    assert row_4["diagnosis_code"] == "NONE"
+    assert row_4["drug_id"] == "None"
 
 
 def test_clean_text_formatting():

@@ -37,25 +37,25 @@ def extract_answer(resp) -> str:
     if isinstance(resp, str):
         try:
             resp = json.loads(resp)
-        except:
+        except Exception:
             return resp
     if isinstance(resp, dict):
-        return resp.get('answer', str(resp))
+        return resp.get("answer", str(resp))
     return str(resp)
 
 
 def get_chart_title(viz) -> str:
     """Extract title from visualization."""
     if viz and isinstance(viz, dict):
-        layout = viz.get('layout', {})
-        title = layout.get('title', {})
+        layout = viz.get("layout", {})
+        title = layout.get("title", {})
         if isinstance(title, dict):
-            return title.get('text', '')
-        return str(title) if title else ''
-    return ''
+            return title.get("text", "")
+        return str(title) if title else ""
+    return ""
 
 
-async def graph_event_stream(query: str, thread_id: str = None):
+async def graph_event_stream(query: str, thread_id: Optional[str] = None):
     """Stream graph execution events."""
     if not thread_id:
         thread_id = f"session_{uuid.uuid4()}"
@@ -63,10 +63,7 @@ async def graph_event_stream(query: str, thread_id: str = None):
     else:
         log("API", f"Continuing: {thread_id}", "C")
 
-    config = {
-        "recursion_limit": 30,
-        "configurable": {"thread_id": thread_id}
-    }
+    config = {"recursion_limit": 30, "configurable": {"thread_id": thread_id}}
 
     inputs = {"messages": [HumanMessage(content=query)]}
     step_count = 0
@@ -101,16 +98,16 @@ async def graph_event_stream(query: str, thread_id: str = None):
                     for msg in node_val["messages"]:
                         # AI message with tool calls
                         if isinstance(msg, AIMessage):
-                            tool_calls = getattr(msg, 'tool_calls', None) or []
+                            tool_calls = getattr(msg, "tool_calls", None) or []
                             if tool_calls:
                                 for tc in tool_calls:
-                                    if isinstance(tc, dict) and tc.get('name'):
+                                    if isinstance(tc, dict) and tc.get("name"):
                                         step_count += 1
                                         yield f"data: {json.dumps({'type': 'step', 'step': step_count, 'tool': tc['name'], 'duration': round(duration, 2)})}\n\n"
                             elif msg.content:
                                 last_text = str(msg.content)
                         # Tool result message
-                        elif hasattr(msg, 'content') and msg.content:
+                        elif hasattr(msg, "content") and msg.content:
                             content = str(msg.content)
                             preview = content[:300] + "..." if len(content) > 300 else content
                             yield f"data: {json.dumps({'type': 'tool_result', 'result': preview})}\n\n"
@@ -120,12 +117,12 @@ async def graph_event_stream(query: str, thread_id: str = None):
         # Fallback if no final was sent
         if not final_sent:
             if last_viz:
-                title = get_chart_title(last_viz) or 'Результат анализа'
+                title = get_chart_title(last_viz) or "Результат анализа"
                 answer = f"**{title}**\n\nГрафик построен."
             elif last_text:
                 answer = last_text
             else:
-                answer = 'Анализ завершён.'
+                answer = "Анализ завершён."
             yield f"data: {json.dumps({'type': 'final', 'answer': answer, 'visualization': last_viz, 'thread_id': thread_id})}\n\n"
 
     except Exception as e:
@@ -135,10 +132,7 @@ async def graph_event_stream(query: str, thread_id: str = None):
 
 @app.post("/chat/stream")
 async def chat_stream(req: QueryRequest):
-    return StreamingResponse(
-        graph_event_stream(req.query, req.thread_id),
-        media_type="text/event-stream"
-    )
+    return StreamingResponse(graph_event_stream(req.query, req.thread_id), media_type="text/event-stream")
 
 
 @app.post("/chat/history")
@@ -153,7 +147,7 @@ async def get_conversation_history(req: ConversationHistoryRequest):
         messages = [
             {"role": msg.type, "content": msg.content}
             for msg in state.values.get("messages", [])
-            if hasattr(msg, 'type') and msg.type in ['human', 'ai']
+            if hasattr(msg, "type") and msg.type in ["human", "ai"]
         ]
         return {"messages": messages, "thread_id": req.thread_id}
     except Exception as e:

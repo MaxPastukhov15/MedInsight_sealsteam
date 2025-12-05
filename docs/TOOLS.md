@@ -49,7 +49,7 @@ run_sql(sql: str) -> str
 **Example:**
 ```sql
 SELECT DATE_TRUNC('month', prescription_date) AS month, COUNT(*) AS cnt
-FROM prescriptions 
+FROM prescriptions
 WHERE diagnosis_code IN ({CODES})
 GROUP BY month ORDER BY month
 ```
@@ -172,7 +172,7 @@ from langchain_core.tools import tool
 def my_new_tool(param1: str, param2: int = 10) -> str:
     """
     Description for LLM - this is what the model sees to decide when to use the tool.
-    
+
     Args:
         param1: Description of param1
         param2: Description of param2 (default 10)

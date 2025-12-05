@@ -20,11 +20,11 @@ services:
       - .env
     ports:
       - "8000:8000"
-    
+
     environment:
       # Example environment variable, adjust as needed
       FRONTEND_URL: http://localhost:80
-    
+
     volumes:
       - ./data:/app/data
 
