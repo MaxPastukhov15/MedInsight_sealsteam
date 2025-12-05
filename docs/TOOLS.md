@@ -57,34 +57,42 @@ GROUP BY month ORDER BY month
 ---
 
 ### 3. forecast_trend
-Forecast future values using linear regression. **Run BEFORE create_chart** to include forecast in visualization.
+Forecast future disease incidence using advanced ensemble models (Prophet + SARIMA). Automatically handles daily/weekly/monthly aggregation.
 
 ```python
-forecast_trend(sql: str, date_col: str, value_col: str, periods: int = 3) -> str
+forecast_trend(
+    sql: str, 
+    days: int = 30, 
+    auto_aggregate: bool = True
+) -> Command
 ```
 
 **Parameters:**
-- `sql`: SQL query returning date and value columns
-- `date_col`: Name of the date/period column
-- `value_col`: Name of the value column to forecast
-- `periods`: Number of future periods to predict (default 3)
+- `sql`: SQL query returning date and cases columns.
+- `days`: Forecast horizon in days (14-365). Default is 30.
+- `auto_aggregate`: If True (default), automatically switches to weekly/monthly aggregation for sparse data (< 20 cases/day).
 
-**Returns:** Forecast values and trend direction
+**Returns:** 
+- Forecast data (JSON structure) stored in state.
+- Text summary with confidence level and preview.
 
 **Example:**
 ```
-forecast_trend(
-    sql="SELECT DATE_TRUNC('month', prescription_date) AS month, COUNT(*) AS cnt FROM prescriptions GROUP BY month",
-    date_col="month",
-    value_col="cnt",
-    periods=3
+forecast_disease(
+    sql="SELECT prescription_date as date, COUNT(*) as cases FROM prescriptions WHERE diagnosis_code = 'J45.8' GROUP BY date ORDER BY date",
+    days=90,
+    auto_aggregate=True
 )
 
 # Output:
-Прогноз (рост, 5.23/период):
-2025-03: 2150.0
-2025-04: 2155.2
-2025-05: 2160.5
+Forecast generated using ensemble model (Aggregation: week).
+Confidence: medium
+Data: 105 weeks of history
+
+Preview (first 7 points):
+2025-03-01: 45 (95% CI: 30-60)
+2025-03-08: 48 (95% CI: 32-64)
+...
 ```
 
 ---
@@ -138,9 +146,10 @@ create_chart(
    → {CODES} replaced with 'E10', 'E11', 'E14'
    → Stored in state.last_sql
 
-3. forecast_trend(sql="REUSE_SQL", date_col="month", value_col="cnt")
-   → Uses state.last_sql
-   → Stores forecast in _last_forecast
+3. forecast_trend(sql="SELECT ...", days=90)
+   → Executes SQL
+   → Applies Prophet + SARIMA ensemble
+   → Stores forecast results in state.forecast_data
 
 4. create_chart(sql="REUSE_SQL", ..., include_forecast=True)
    → Uses state.last_sql
