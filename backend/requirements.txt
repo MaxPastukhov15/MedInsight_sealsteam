@@ -21,3 +21,7 @@ python-dotenv>=1.0.0
 # Web backend (FastAPI + Uvicorn)
 fastapi>=0.100.0
 uvicorn[standard]>=0.22.0
+
+# Forecast
+prophet
+statsmodels

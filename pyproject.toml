@@ -56,6 +56,7 @@ python_version = "3.12"
 files = ["backend", "etl"]
 strict = false
 ignore_missing_imports = true
+explicit_package_bases = true
 
 # Pytest configuration
 [tool.pytest.ini_options]

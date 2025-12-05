@@ -43,7 +43,7 @@ D14.1          Доброкачественное новообразование
 U85         Устойчивость к противоопухолевым средствам  НЕ ОПРЕДЕЛЕН
 XXII                         КОДЫ ДЛЯ СПЕЦИАЛЬНЫХ ЦЕЛЕЙ  ВНЕШНИЕ ПРИЧИНЫ ЗАБОЛЕВАЕМОСТИ И СМЕРТНОСТИ
 Всего 14801 строчек
-- drugs:
+- medications:
 drug_id        trade_name                                          full_name     dosage   price
 200052200       Галоперидол                           Галоперидол, 1,5 мг № 50        1.5   12.98
 200052400       Галоперидол                   Галоперидол, 5 мг № 50, таблетки          5   15.51
@@ -53,25 +53,37 @@ drug_id        trade_name                                          full_name    
 ИНСТРУМЕНТЫ:
 - search_codes: поиск кодов диагнозов/препаратов
 - run_sql: выполнение SQL запроса
-- forecast_trend: прогноз временных рядов
-- create_chart: визуализация данных
+- forecast_trend: ПРОГНОЗ на будущее (требует SQL с колонками date и cases)
+- create_visualization: выполняет Python код для создания графика Plotly
 
 ОБЯЗАТЕЛЬНО:
-1. ВСЕГДА вызывай create_chart после run_sql - каждый анализ должен иметь график!
-2. После search_codes вызывай run_sql И create_chart В ОДНОМ ОТВЕТЕ
-3. sql="REUSE_SQL" использует предыдущий SQL для графика
+1. ВСЕГДА вызывай create_visualization после анализа данных!
+2. Если пользователь просит ПРОГНОЗ/ТРЕНД/ПРЕДСКАЗАНИЕ - вызывай forecast_trend!
 
 SQL ПРИМЕРЫ:
 -- Тренд по месяцам:
-SELECT DATE_TRUNC('month', prescription_date) AS month, COUNT(*) AS cnt
-FROM prescriptions WHERE diagnosis_code IN ({CODES}) GROUP BY month ORDER BY month
+SELECT DATE_TRUNC('month', date) AS month, COUNT(*) AS cnt
+FROM prescriptions WHERE diagnosis_code IN ({CODES}) AND date IS NOT NULL GROUP BY 1 ORDER BY 1
 
--- Топ по категориям:
-SELECT district, COUNT(*) AS cnt FROM patients GROUP BY district ORDER BY cnt DESC
+-- ДЛЯ ПРОГНОЗА (forecast_trend требует колонки date и cases):
+SELECT DATE_TRUNC('day', date) AS date, COUNT(*) AS cases
+FROM prescriptions WHERE diagnosis_code IN ({CODES}) AND date IS NOT NULL GROUP BY 1 ORDER BY 1
+
+ВИЗУАЛИЗАЦИЯ (create_visualization):
+Доступны: db, pd, px, go, np, forecast_df
+Пример ТОЛЬКО прогноза (без исторических данных):
+```
+fig = go.Figure()
+fig.add_scatter(x=forecast_df['date'], y=forecast_df['predicted'], mode='lines', name='Прогноз')
+fig.add_scatter(x=forecast_df['date'], y=forecast_df['upper_bound'], mode='lines', line=dict(dash='dash'), name='Верхняя граница')
+fig.add_scatter(x=forecast_df['date'], y=forecast_df['lower_bound'], mode='lines', line=dict(dash='dash'), name='Нижняя граница')
+fig.update_layout(title='Прогноз')
+```
 
 ПРАВИЛА:
 - {CODES} заменяется на найденные коды
-- include_forecast=True добавляет прогноз на график
+- forecast_df содержит результат forecast_trend (date, predicted, lower_bound, upper_bound)
+- Если пользователь просит ТОЛЬКО прогноз - НЕ добавляй исторические данные на график!
 - Финальный ответ: краткий анализ с числами"""
 
 
@@ -167,11 +179,11 @@ class MedicalGraph:
                                 found_codes.append(parts[0])
 
                     # Track SQL
-                    if tool_name == "run_sql" and "Error" not in str(result):
+                    if tool_name in ("run_sql", "forecast_trend") and "Error" not in str(result):
                         last_sql = tool_args["sql"]
 
                     # Capture chart
-                    if tool_name == "create_chart":
+                    if tool_name == "create_visualization":
                         chart = get_last_chart()
                         if chart:
                             viz = chart

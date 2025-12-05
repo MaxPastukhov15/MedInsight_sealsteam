@@ -34,8 +34,8 @@ class Database:
                 if name == "diagnoses":
                     self.conn.execute("PRAGMA create_fts_index('diagnoses', 'diagnosis_code', 'diagnosis_name')")
                     log("DB", "Indexed 'diagnoses' for search", "G")
-                elif name == "drugs":
-                    self.conn.execute("PRAGMA create_fts_index('drugs', 'drug_id', 'full_name')")
+                elif name == "medications":
+                    self.conn.execute("PRAGMA create_fts_index('medications', 'drug_id', 'full_name')")
                     log("DB", "Indexed 'drugs' for search", "G")
 
             except Exception as e:

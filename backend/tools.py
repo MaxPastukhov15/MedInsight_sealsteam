@@ -11,7 +11,7 @@ from langchain_core.tools import tool
 from backend.database import Database
 
 # Global state
-_db = Database("data")
+_db = Database("data/processed")
 _last_chart = None
 _last_forecast = None
 
@@ -63,12 +63,10 @@ def run_sql(sql: str) -> str:
     """Execute a DuckDB SQL query on the medical database.
 
     Schema:
-    - patients: patient_id, birth_date (DATE), gender, district, region
-    - prescriptions: patient_id, diagnosis_code, drug_code, prescription_date
-    - diagnoses: diagnosis_code, diagnosis_name
-    - drugs: drug_code, full_name, price
-
-    Use DATE_DIFF('year', birth_date, CURRENT_DATE) for age calculation.
+    - patients: patient_id, birth_dt, age, gender, district, region
+    - prescriptions: prescription_id, patient_id, diagnosis_code, drug_id, date, year, month
+    - diagnoses: diagnosis_code, diagnosis_name, disease_class
+    - medications: drug_id, trade_name, full_name, dosage, price
     """
     df, err = _db.execute(sql)
     if err:
@@ -79,101 +77,141 @@ def run_sql(sql: str) -> str:
 
 
 @tool
-def forecast_trend(sql: str, date_col: str, value_col: str, periods: int = 3) -> str:
-    """Forecast future values using linear regression. Run BEFORE create_chart.
+def forecast_trend(
+    sql: str,
+    days: int = 30,
+    max_history_days: Optional[int] = None,
+    auto_aggregate: bool = True,
+) -> str:
+    """Forecast disease incidence using Prophet+SARIMA ensemble.
 
     Args:
-        sql: SQL query returning date and value columns
-        date_col: Name of the date/period column
-        value_col: Name of the value column to forecast
-        periods: Number of future periods to predict (default 3)
+        sql: SQL query returning 'date' (DATE) and 'cases' (INT) columns
+        days: Forecast horizon in days (14-365)
+        max_history_days: Limit historical data to last N days (None=use all)
+        auto_aggregate: Automatically aggregate sparse data (default True)
     """
     global _last_forecast
+    from backend.forecast_trend import generate_forecast, ForecastError
+
     df, err = _db.execute(sql)
     if err:
         return f"SQL Error: {err}"
     if df is None or df.empty:
         return "No data for forecast"
 
+    # Drop rows with null dates
+    df = df.dropna(subset=["date"])
+
     try:
-        df[date_col] = pd.to_datetime(df[date_col])
-        df = df.sort_values(date_col)
-        y = df[value_col].values.astype(float)
+        result = generate_forecast(
+            df=df,
+            days=days,
+            max_history_days=max_history_days,
+            use_ensemble=True,
+            auto_aggregate=auto_aggregate,
+        )
 
-        x = np.arange(len(y))
-        slope, intercept = np.polyfit(x, y, 1)  # type: ignore
+        _last_forecast = pd.DataFrame(result["forecast"])
+        _last_forecast["date"] = pd.to_datetime(_last_forecast["date"])
 
-        future_x = np.arange(len(y), len(y) + periods)
-        future_y = slope * future_x + intercept
+        warnings_text = ""
+        if result["data_quality"]["warnings"]:
+            warnings_text = "\nWarnings: " + "; ".join(result["data_quality"]["warnings"][:3])
 
-        last_date = df[date_col].iloc[-1]
-        freq = pd.infer_freq(df[date_col]) or "MS"
-        future_dates = pd.date_range(last_date, periods=periods + 1, freq=freq)[1:]
+        msg = (
+            f"Model: {result['model_used']} | Confidence: {result['model_confidence']} | "
+            f"Aggregation: {result['data_quality']['aggregation']}{warnings_text}\n\n"
+        )
+        for item in result["forecast"][:7]:
+            msg += f"{item['date']}: {item['predicted']} (CI: {item['lower_bound']}-{item['upper_bound']})\n"
+        if len(result["forecast"]) > 7:
+            msg += f"... ({len(result['forecast']) - 7} more points)"
 
-        _last_forecast = pd.DataFrame({date_col: future_dates, value_col: future_y})
-
-        results = [f"{d.strftime('%Y-%m')}: {v:.1f}" for d, v in zip(future_dates, future_y)]
-        trend = "рост" if slope > 0 else "снижение"
-        return f"Прогноз ({trend}, {slope:.2f}/период):\n" + "\n".join(results)
+        return msg
+    except ForecastError as e:
+        return f"Forecast Error: {e}"
     except Exception as e:
         return f"Forecast error: {e}"
 
 
 @tool
-def create_chart(
-    sql: str,
-    chart_type: Literal["bar", "line", "scatter", "histogram", "pie"],
-    x_col: str,
-    y_col: Optional[str] = None,
-    title: str = "Chart",
-    include_forecast: bool = False,
-) -> str:
-    """Create a Plotly chart from SQL query results.
+def create_visualization(code: str) -> str:
+    """Execute Python code to create a Plotly visualization.
 
-    Args:
-        sql: SQL query to get data
-        chart_type: Type of chart (bar, line, scatter, histogram, pie)
-        x_col: Column name for X axis
-        y_col: Column name for Y axis (optional for histogram/pie)
-        title: Chart title
-        include_forecast: Include forecast data from previous forecast_trend call
+    Available variables:
+    - db: Database instance with db.execute(sql) -> (df, err)
+    - pd: pandas
+    - px: plotly.express
+    - go: plotly.graph_objects
+    - np: numpy
+    - forecast_df: DataFrame from last forecast_trend call (columns: date, predicted, lower_bound, upper_bound)
+    - datetime, timedelta: from datetime module
+    - json: json module
+
+    The code MUST assign the final figure to variable `fig`.
+
+    Example:
+        df, _ = db.execute("SELECT district, COUNT(*) as cnt FROM patients GROUP BY district")
+        fig = px.bar(df, x='district', y='cnt', title='Patients by District')
     """
     global _last_chart, _last_forecast
-    df, err = _db.execute(sql)
-    if err:
-        return f"SQL Error: {err}"
-    if df is None or df.empty:
-        return "No data for chart"
+    import plotly.graph_objects as go
+    from datetime import datetime, timedelta
+
+    local_vars = {
+        "db": _db,
+        "pd": pd,
+        "px": px,
+        "go": go,
+        "np": np,
+        "forecast_df": _last_forecast,
+        "datetime": datetime,
+        "timedelta": timedelta,
+        "json": json,
+    }
+
+    safe_builtins = {
+        "len": len,
+        "range": range,
+        "enumerate": enumerate,
+        "zip": zip,
+        "list": list,
+        "dict": dict,
+        "set": set,
+        "tuple": tuple,
+        "str": str,
+        "int": int,
+        "float": float,
+        "bool": bool,
+        "min": min,
+        "max": max,
+        "sum": sum,
+        "abs": abs,
+        "round": round,
+        "sorted": sorted,
+        "reversed": reversed,
+        "filter": filter,
+        "map": map,
+        "any": any,
+        "all": all,
+        "isinstance": isinstance,
+        "type": type,
+        "print": print,
+        "None": None,
+        "True": True,
+        "False": False,
+    }
 
     try:
-        # Include forecast if available
-        if include_forecast and _last_forecast is not None and y_col:
-            df = df.copy()
-            df["_type"] = "actual"
-            forecast_df = _last_forecast.copy()
-            forecast_df["_type"] = "forecast"
-            forecast_df = forecast_df.rename(columns={forecast_df.columns[0]: x_col, forecast_df.columns[1]: y_col})
-            df = pd.concat([df, forecast_df[[x_col, y_col, "_type"]]], ignore_index=True)
-
-        # Create chart
-        color = "_type" if "_type" in df.columns else None
-        if chart_type == "line":
-            fig = px.line(df, x=x_col, y=y_col, color=color, title=title)
-        elif chart_type == "bar":
-            fig = px.bar(df, x=x_col, y=y_col, color=color, title=title)
-        elif chart_type == "scatter":
-            fig = px.scatter(df, x=x_col, y=y_col, title=title)
-        elif chart_type == "histogram":
-            fig = px.histogram(df, x=x_col, title=title)
-        elif chart_type == "pie":
-            fig = px.pie(df, names=x_col, values=y_col, title=title)
-        else:
-            fig = px.bar(df, x=x_col, y=y_col, title=title)
-
+        exec(code, {"__builtins__": safe_builtins}, local_vars)
+        fig = local_vars.get("fig")
+        if fig is None:
+            return "Error: code must assign figure to 'fig' variable"
         _last_chart = json.loads(fig.to_json())
-        return f"Chart created: {title}"
+        return "Chart created successfully"
     except Exception as e:
-        return f"Chart error: {e}"
+        return f"Error: {e}"
 
 
-TOOLS = [search_codes, run_sql, forecast_trend, create_chart]
+TOOLS = [search_codes, run_sql, forecast_trend, create_visualization]
