@@ -12,7 +12,7 @@ An intelligent medical analytics assistant that analyzes real-world patient and 
 4. Copy your key (starts with `sk-or-v1-...`)
 
 ### 2. Choose a model
-Browse available models at [https://openrouter.ai/models](https://openrouter.ai/models).  
+Browse available models at [https://openrouter.ai/models](https://openrouter.ai/models).
 
 ### 3. Configure your environment
 ```bash
@@ -47,7 +47,7 @@ This will:
 - Build and serve the **React frontend** (port `80`)
 
 ### Open the app
-Visit in your browser:  
+Visit in your browser:
     http://localhost:80
 
 ### Stop services
