@@ -18,8 +18,6 @@ MAX_STEPS = int(os.getenv("MAX_STEPS", "10"))
 MODEL_NAME = os.getenv("MODEL_NAME", "qwen/qwen3-32b")
 
 
-# ============ SYSTEM PROMPT ============
-
 SYSTEM_PROMPT = """Ты медицинский аналитик данных. Отвечай на русском языке. НЕ ДУМАЙ ВСЛУХ.
 
 СХЕМА БАЗЫ ДАННЫХ:
@@ -85,9 +83,6 @@ fig.update_layout(title='Прогноз')
 - forecast_df содержит результат forecast_trend (date, predicted, lower_bound, upper_bound)
 - Если пользователь просит ТОЛЬКО прогноз - НЕ добавляй исторические данные на график!
 - Финальный ответ: краткий анализ с числами"""
-
-
-# ============ GRAPH ============
 
 
 class MedicalGraph:

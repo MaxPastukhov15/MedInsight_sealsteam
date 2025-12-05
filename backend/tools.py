@@ -1,14 +1,15 @@
-"""Medical analytics tools for the agent."""
-
 import json
 from typing import Literal, Optional
 
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import plotly.graph_objects as go
+from datetime import datetime, timedelta
 
 from langchain_core.tools import tool
 from backend.database import Database
+
 
 # Global state
 _db = Database("data/processed")
@@ -156,8 +157,6 @@ def create_visualization(code: str) -> str:
         fig = px.bar(df, x='district', y='cnt', title='Patients by District')
     """
     global _last_chart, _last_forecast
-    import plotly.graph_objects as go
-    from datetime import datetime, timedelta
 
     local_vars = {
         "db": _db,

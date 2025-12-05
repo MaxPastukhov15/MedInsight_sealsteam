@@ -23,10 +23,10 @@ cp .env.example .env
 nano .env
 ```
 
-Your `.env` should look like:
+Your `.env` should look like this:
 ```ini
 OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxxxxxxxxxxxxxx
-MODEL_NAME=qwen/qwen3-235b-a22b:free
+MODEL_NAME=qwen/qwen3-32b
 MAX_STEPS=15
 MAX_RETRIES=3
 ```

@@ -1,8 +1,3 @@
-"""
-Time series forecasting module for disease incidence prediction.
-Supports Prophet and SARIMA models with adaptive ensemble weighting.
-"""
-
 import warnings
 from datetime import timedelta
 from typing import Dict, List, Optional, Tuple, Any
@@ -10,7 +5,6 @@ from typing import Dict, List, Optional, Tuple, Any
 import pandas as pd
 import numpy as np
 
-# Conditional imports for forecasting libraries
 try:
     from prophet import Prophet
 
@@ -476,7 +470,6 @@ def generate_forecast(
         )
 
     # Fill missing dates (using new frequency)
-    # Logic inside fill_missing_dates assumes daily, so we handle aggregated separately
     if aggregation_mode == "day":
         df, fill_warnings = fill_missing_dates(df)
         warnings_list.extend(fill_warnings)
