@@ -71,9 +71,9 @@ def patch_files():
 
         fp = sys.stdout
 
-    # By this point we have some sort of file object we can write the 
+    # By this point we have some sort of file object we can write the
     # modified JSON to.
-    
+
     json.dump(result, fp, indent=args.indent, ensure_ascii=not(args.preserve_unicode))
     fp.write('\n')
 
@@ -98,7 +98,7 @@ def patch_files():
                 # In the event we could not actually do the atomic
                 # replace, unlink the original to move it out of the
                 # way and finally move the temporary file into place.
-                
+
                 os.unlink(args.ORIGINAL.name)
                 os.rename(pathname, args.ORIGINAL.name)
 

@@ -1926,7 +1926,7 @@ typedef struct {
  * #endif
  * #ifndef NUMPY_CORE_INCLUDE_NUMPY_NPY_1_7_DEPRECATED_API_H_
  * #define NUMPY_CORE_INCLUDE_NUMPY_NPY_1_7_DEPRECATED_API_H_
- * 
+ *
  * #ifndef NPY_NO_DEPRECATED_API
  * #if defined(_WIN32)
  * #define _WARN___STR2__(x) #x
