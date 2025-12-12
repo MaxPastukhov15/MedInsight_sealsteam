@@ -18,7 +18,7 @@ export const SIZES = {
     height: '60px',
   },
   manageInput: {
-    height: '90px', // 60px + padding
+    height: '90px',
   },
   spacing: {
     small: '8px',

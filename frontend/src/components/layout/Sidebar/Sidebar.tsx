@@ -1,4 +1,5 @@
 import { useChatStore, useUIStore } from '../../../stores';
+import { translations, type Language } from '../../../utils/translations';
 import './Sidebar.css';
 
 interface SidebarProps {
@@ -8,7 +9,8 @@ interface SidebarProps {
 
 const Sidebar = ({ onToggle, isOpen }: SidebarProps) => {
   const { clearChat, getCurrentChat } = useChatStore();
-  const { openSettingsModal, openAboutModal } = useUIStore();
+  const { openSettingsModal, openAboutModal, language } = useUIStore();
+  const t = translations[language as Language] || translations.en;
 
   const handleNewChat = () => {
     const currentChat = getCurrentChat();
@@ -39,7 +41,7 @@ const Sidebar = ({ onToggle, isOpen }: SidebarProps) => {
         <div className="sidebar-new-chat">
           <button className="new-chat-large-button" onClick={handleNewChat}>
             <img src="/chat-new-svgrepo-com.svg" alt="New Chat" className="new-chat-large-icon" />
-            <span>New Chat</span>
+            <span>{t.sidebar.newChat}</span>
           </button>
         </div>
         <div className="sidebar-body">
@@ -48,11 +50,11 @@ const Sidebar = ({ onToggle, isOpen }: SidebarProps) => {
         <div className="sidebar-footer">
           <button className="settings-button" onClick={handleSettings}>
             <img src="/settings-svgrepo-com.svg" alt="Settings" className="settings-icon" />
-            <span>Settings</span>
+            <span>{t.sidebar.settings}</span>
           </button>
           <button className="about-button" onClick={handleAbout}>
             <img src="/about-svgrepo-com.svg" alt="About" className="about-icon" />
-            <span>About</span>
+            <span>{t.sidebar.about}</span>
           </button>
         </div>
       </div>

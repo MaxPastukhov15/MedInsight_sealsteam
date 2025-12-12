@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { useUIStore } from './uiStore';
 
 export interface Step {
@@ -61,7 +62,6 @@ const genMsgId = () => `msg_${Date.now()}_${++msgIdCounter}`;
 const extractAnswer = (answer: any): string => {
   if (!answer) return '';
   if (typeof answer === 'string') {
-    // Check if it's JSON string
     if (answer.startsWith('{') || answer.startsWith('[')) {
       try {
         const parsed = JSON.parse(answer);
@@ -78,12 +78,14 @@ const extractAnswer = (answer: any): string => {
   return String(answer);
 };
 
-export const useChatStore = create<ChatState>((set, get) => ({
-  chats: [],
-  currentChatId: null,
-  isLoading: false,
+export const useChatStore = create<ChatState>()(
+  persist(
+    (set, get) => ({
+      chats: [],
+      currentChatId: null,
+      isLoading: false,
 
-  createChat: (title = 'New Chat') => {
+      createChat: (title = 'New Chat') => {
     const newChat: Chat = {
       id: Date.now().toString(),
       title,
@@ -214,7 +216,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
     addMessage(chatId, { role: 'user', text });
     setLoading(true);
 
-    // Create agent message immediately for streaming steps
     const agentMsgId = addMessage(chatId, { role: 'agent', text: '', steps: [] });
 
     try {
@@ -252,7 +253,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
             const data = JSON.parse(line.substring(6));
 
             if (data.type === 'step') {
-              // New step - add it with input (tool name and any thought)
               const step: Step = {
                 title: `Step ${data.step}`,
                 tool: data.tool || 'thought',
@@ -263,13 +263,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
               };
               steps.push(step);
               currentStepIdx = steps.length - 1;
-
-              // Update message with new step immediately
               updateMessage(chatId!, agentMsgId, { steps: [...steps] });
             }
 
             if (data.type === 'tool_result') {
-              // Update current step with output
               if (currentStepIdx >= 0 && steps[currentStepIdx]) {
                 steps[currentStepIdx].output = data.result || '';
                 updateMessage(chatId!, agentMsgId, { steps: [...steps] });
@@ -278,7 +275,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
             if (data.type === 'visualization' && data.data) {
               plotlyData = data.data;
-              // Add visualization step
               steps.push({
                 title: 'Visualization',
                 tool: 'chart',
@@ -319,7 +315,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
         setThreadId(chatId!, threadId);
       }
 
-      // Final update with answer and plotly data
       updateMessage(chatId!, agentMsgId, {
         text: finalAnswer || 'Response received',
         plotlyData,
@@ -332,4 +327,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
       setLoading(false);
     }
   },
+}), {
+  name: 'chat-storage',
+  partialize: (state) => ({ 
+    chats: state.chats, 
+    currentChatId: state.currentChatId 
+  }),
 }));
