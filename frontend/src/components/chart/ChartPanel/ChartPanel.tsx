@@ -19,7 +19,7 @@ const ChartPanel = () => {
 
     if (isChartOpen && msg) {
       const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      
+
       const layoutCommon = {
         margin: { l: 60, r: 20, t: 40, b: 60 },
         paper_bgcolor: 'transparent',
@@ -52,7 +52,7 @@ const ChartPanel = () => {
         const chart = msg.chart;
         const x = chart.points.map(d => d.month);
         const y = chart.points.map(d => d.cases);
-        
+
         const traceColor = '#007bff'; // Primary color
 
         const trace = chart.mode === 'bar'

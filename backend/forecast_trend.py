@@ -91,7 +91,7 @@ def validate_dataframe(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
     duplicates = df["date"].duplicated().sum()
     if duplicates > 0:
         warnings_list.append(f"Found {duplicates} duplicate dates, aggregated by sum")
-        df = df.groupby("date", as_index=False)["cases"].sum()
+        df = df.groupby("date", as_index=False)["cases"].sum()  # type: ignore
 
     return df, warnings_list
 
@@ -271,7 +271,7 @@ def forecast_with_sarima(df: pd.DataFrame, days: int) -> pd.DataFrame:
         ts = df.set_index("date")["cases"]
 
         # Detect seasonality period based on index frequency
-        freq = pd.infer_freq(ts.index)
+        freq = pd.infer_freq(ts.index)  # type: ignore
         seasonal_period = 7
 
         if freq:

@@ -31,7 +31,7 @@ const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
               <h2>MedInsight AI</h2>
               <p>{t.about.version}: 0.5.0</p>
               <p>{t.about.description}</p>
-              
+
               <div className="about-features">
                 <h3>{t.about.featuresTitle}</h3>
                 <ul>

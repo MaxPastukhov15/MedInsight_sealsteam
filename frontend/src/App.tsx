@@ -10,7 +10,7 @@ function App() {
   useEffect(() => {
     const root = document.documentElement;
     let size = '0.9375rem';
-    
+
     switch (fontSize) {
       case 'small':
         size = '0.8125rem';
@@ -22,7 +22,7 @@ function App() {
         size = '1.0625rem';
         break;
     }
-    
+
     root.style.setProperty('--font-size-message', size);
   }, [fontSize]);
 
@@ -38,7 +38,7 @@ function App() {
       const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       root.classList.add(`${systemTheme}-theme`);
       root.classList.remove(`${systemTheme === 'dark' ? 'light' : 'dark'}-theme`);
-      
+
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleChange = (e: MediaQueryListEvent) => {
         const newTheme = e.matches ? 'dark' : 'light';

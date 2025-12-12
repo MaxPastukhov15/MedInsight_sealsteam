@@ -329,8 +329,8 @@ export const useChatStore = create<ChatState>()(
   },
 }), {
   name: 'chat-storage',
-  partialize: (state) => ({ 
-    chats: state.chats, 
-    currentChatId: state.currentChatId 
+  partialize: (state) => ({
+    chats: state.chats,
+    currentChatId: state.currentChatId
   }),
 }));

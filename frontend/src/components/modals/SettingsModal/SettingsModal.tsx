@@ -9,11 +9,11 @@ interface SettingsModalProps {
 }
 
 const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
-  const { 
-    theme, setTheme, 
-    language, setLanguage, 
+  const {
+    theme, setTheme,
+    language, setLanguage,
     fontSize, setFontSize,
-    autoSaveChats, setAutoSaveChats 
+    autoSaveChats, setAutoSaveChats
   } = useUIStore();
 
   const t = translations[language as Language] || translations.en;
@@ -33,8 +33,8 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               <h3>{t.settings.appearance}</h3>
               <div className="setting-item">
                 <label htmlFor="theme">{t.settings.theme}</label>
-                <select 
-                  id="theme" 
+                <select
+                  id="theme"
                   className="setting-select"
                   value={theme}
                   onChange={(e) => setTheme(e.target.value as Theme)}
@@ -46,8 +46,8 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               </div>
               <div className="setting-item">
                 <label htmlFor="language">{t.settings.language}</label>
-                <select 
-                  id="language" 
+                <select
+                  id="language"
                   className="setting-select"
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
@@ -62,9 +62,9 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               <h3>{t.settings.chat}</h3>
               <div className="setting-item">
                 <label htmlFor="fontSize">{t.settings.fontSize}</label>
-                <select 
-                  id="fontSize" 
-                  className="setting-select" 
+                <select
+                  id="fontSize"
+                  className="setting-select"
                   value={fontSize}
                   onChange={(e) => setFontSize(e.target.value as FontSize)}
                 >
@@ -76,10 +76,10 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               <div className="setting-item">
                 <label htmlFor="autoSave">{t.settings.autoSave}</label>
                 <div className="toggle-container">
-                  <input 
-                    type="checkbox" 
-                    id="autoSave" 
-                    className="toggle-input" 
+                  <input
+                    type="checkbox"
+                    id="autoSave"
+                    className="toggle-input"
                     checked={autoSaveChats}
                     onChange={(e) => setAutoSaveChats(e.target.checked)}
                   />
