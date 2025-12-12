@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { useChatStore, useUIStore } from '../../../stores';
+import { translations, type Language } from '../../../utils/translations';
 import './ManageInput.css';
 
 const ManageInput = () => {
   const [messageText, setMessageText] = useState('');
   const { sendMessage, isLoading } = useChatStore();
-  const { setInputHeight } = useUIStore();
+  const { setInputHeight, language } = useUIStore();
   const inputRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const t = translations[language as Language] || translations.en;
 
   const handleSendMessage = () => {
     if (messageText.trim() && !isLoading) {
@@ -82,7 +85,7 @@ const ManageInput = () => {
       <div className="input-container">
         <textarea
           ref={textareaRef}
-          placeholder="Type a message..."
+          placeholder={t.input.placeholder}
           className="message-input"
           value={messageText}
           onChange={handleChange}

@@ -1,4 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
+import { useUIStore } from '../../../stores/uiStore';
+import { translations, type Language } from '../../../utils/translations';
 import './AboutModal.css';
 
 interface AboutModalProps {
@@ -7,14 +9,17 @@ interface AboutModalProps {
 }
 
 const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
+  const { language } = useUIStore();
+  const t = translations[language as Language] || translations.en;
+
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog.Portal>
         <Dialog.Overlay className="DialogOverlay" />
         <Dialog.Content className="DialogContent">
-          <Dialog.Title className="DialogTitle">About Medical Analytics AI-Agent</Dialog.Title>
+          <Dialog.Title className="DialogTitle">{t.about.title}</Dialog.Title>
           <Dialog.Description className="DialogDescription">
-            Information about the application
+            {t.about.description}
           </Dialog.Description>
 
           <div className="about-content">
@@ -23,23 +28,23 @@ const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
             </div>
             <p className="team-name">SealsTeam</p>
             <div className="about-info">
-              <h2>Medical Analytics AI-Agent</h2>
-              <p>Version: 0.5.0</p>
-              <p>AI assistant based on Large Language Model (LLM) technology for analyzing medical data from St. Petersburg and providing insights.</p>
+              <h2>MedInsight AI</h2>
+              <p>{t.about.version}: 0.5.0</p>
+              <p>{t.about.description}</p>
 
               <div className="about-features">
-                <h3>Key Features:</h3>
+                <h3>{t.about.featuresTitle}</h3>
                 <ul>
-                  <li>Medical data analysis</li>
-                  <li>Pattern recognition</li>
-                  <li>Insight generation</li>
-                  <li>Interactive chat interface</li>
+                  <li>{t.about.feature1}</li>
+                  <li>{t.about.feature2}</li>
+                  <li>{t.about.feature3}</li>
+                  <li>{t.about.feature4}</li>
                 </ul>
               </div>
 
               <div className="about-tech">
-                <h3>Technologies:</h3>
-                <p>React, TypeScript, Zustand, Radix UI</p>
+                <h3>{t.about.developer}:</h3>
+                <p>SealsTeam</p>
               </div>
             </div>
           </div>

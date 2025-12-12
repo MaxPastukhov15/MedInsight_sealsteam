@@ -1,5 +1,5 @@
 .DialogOverlay {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--modal-overlay);
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -9,58 +9,59 @@
 }
 
 .DialogContent {
-  background-color: white;
+  background-color: var(--bg-secondary);
   border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 25px var(--shadow-color);
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 90%;
-  max-width: 500px;
+  max-width: 31.25rem; /* 500px */
   max-height: 85vh;
-  padding: 25px;
+  padding: 1.5625rem; /* 25px */
   z-index: 1001;
   overflow-y: auto;
+  color: var(--text-primary);
 }
 
 .DialogTitle {
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 600;
-  color: #333;
-  margin-bottom: 10px;
+  color: var(--text-primary);
+  margin-bottom: 0.625rem;
 }
 
 .DialogDescription {
-  font-size: 16px;
-  color: #666;
-  margin-bottom: 20px;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
 }
 
 .about-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 1.25rem;
 }
 
 .about-logo {
   display: flex;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: 0.625rem;
 }
 
 .team-name {
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 400;
-  color: #333;
-  margin-top: -30px;
+  color: var(--text-primary);
+  margin-top: -1.875rem;
   font-style: italic;
 }
 
 .about-logo-image {
-  width: 80px;
-  height: 80px;
+  width: 5rem;
+  height: 5rem;
 }
 
 .about-info {
@@ -69,48 +70,48 @@
 }
 
 .about-info h2 {
-  font-size: 22px;
-  margin-bottom: 15px;
-  color: #333;
+  font-size: 1.375rem;
+  margin-bottom: 0.9375rem;
+  color: var(--text-primary);
 }
 
 .about-info p {
-  margin-bottom: 10px;
-  color: #555;
+  margin-bottom: 0.625rem;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
 .about-features, .about-tech {
-  margin-top: 20px;
+  margin-top: 1.25rem;
   text-align: left;
 }
 
 .about-features h3, .about-tech h3 {
-  font-size: 18px;
-  margin-bottom: 10px;
-  color: #333;
+  font-size: 1.125rem;
+  margin-bottom: 0.625rem;
+  color: var(--text-primary);
 }
 
 .about-features ul {
-  padding-left: 20px;
+  padding-left: 1.25rem;
 }
 
 .about-features li {
-  margin-bottom: 5px;
-  color: #555;
+  margin-bottom: 0.3125rem;
+  color: var(--text-secondary);
 }
 
 .IconButton {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 0.9375rem;
+  right: 0.9375rem;
   background: transparent;
   border: none;
-  font-size: 20px;
+  font-size: 1.25rem;
   cursor: pointer;
-  color: #666;
-  width: 30px;
-  height: 30px;
+  color: var(--text-secondary);
+  width: 1.875rem;
+  height: 1.875rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -119,11 +120,20 @@
 }
 
 .IconButton:hover {
-  background-color: #f0f0f0;
+  background-color: var(--bg-primary);
 }
 
 @media (min-width: 768px) {
   .DialogContent {
     width: 80%;
   }
+}
+
+.dark-theme .about-logo-image {
+  filter: brightness(0) invert(1);
+}
+
+.dark-theme .about-info p,
+.dark-theme .about-features li {
+  color: #cccccc;
 }

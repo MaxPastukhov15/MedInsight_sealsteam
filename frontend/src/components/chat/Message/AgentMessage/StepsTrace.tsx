@@ -10,7 +10,6 @@ interface StepsTraceProps {
 const formatOutput = (output: string | undefined, tool: string): React.ReactNode => {
   if (!output) return <span className="step-output-pending">...</span>;
 
-  // Try to parse as JSON for SQL results
   try {
     const parsed = JSON.parse(output);
     if (Array.isArray(parsed) && parsed.length > 0) {
@@ -40,12 +39,10 @@ const formatOutput = (output: string | undefined, tool: string): React.ReactNode
     }
   } catch {}
 
-  // For chart tool, show simple message
   if (tool === 'chart') {
     return <div className="step-output-text">Graph generated</div>;
   }
 
-  // Default: truncated text
   const truncated = output.length > 300 ? output.slice(0, 300) + '...' : output;
   return <pre className="step-output-text">{truncated}</pre>;
 };

@@ -1,25 +1,27 @@
 .manage-input {
   border: none;
-  padding: 15px 20px;
+  padding: 0.9375rem 1.25rem;
   background-color: transparent;
   display: flex;
-  position:absolute;
+  position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   align-items: center;
   justify-content: center;
+  z-index: 10;
 }
 
 .input-container {
   display: flex;
   align-items: flex-end;
-  background-color: #ffffff;
+  background-color: var(--input-bg);
   border-radius: 24px;
-  padding: 8px 12px;
+  padding: 0.5rem 0.75rem;
   width: 80%;
-  max-width: 1000px;
-  border: 1px solid #e0e0e0;
+  max-width: 62.5rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 10px var(--shadow-color);
 }
 
 .message-input {
@@ -27,16 +29,16 @@
   border: none !important;
   background-color: transparent;
   outline: none;
-  font-size: 14px;
-  padding: 8px 12px;
-  color: #333;
+  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  color: var(--text-primary);
   line-height: 1.4;
-  min-height: 20px;
-  max-height: 120px;
+  min-height: 1.25rem;
+  max-height: 7.5rem;
   overflow-y: auto;
   font-family: inherit;
   scrollbar-width: thin;
-  scrollbar-color: #ccc transparent;
+  scrollbar-color: var(--border-color) transparent;
 }
 
 .message-input::-webkit-scrollbar {
@@ -48,16 +50,16 @@
 }
 
 .message-input::-webkit-scrollbar-thumb {
-  background-color: #ccc;
+  background-color: var(--border-color);
   border-radius: 3px;
 }
 
 .message-input::-webkit-scrollbar-thumb:hover {
-  background-color: #aaa;
+  background-color: var(--text-secondary);
 }
 
 .message-input::placeholder {
-  color: #999;
+  color: var(--text-secondary);
 }
 
 .send-button {
@@ -69,17 +71,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--text-primary);
 }
 
 .send-icon {
-  width: 30px;
-  height: 30px;
+  width: 1.875rem;
+  height: 1.875rem;
   transition: background-color 0.2s;
   border-radius: 7px;
 }
 
 .send-icon:hover {
-  background-color: #e0e0e0;
+  background-color: var(--button-secondary-hover);
 }
 
 .send-button:disabled .send-icon {
@@ -94,4 +97,14 @@
 .message-input:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .input-container {
+    width: 95%;
+  }
+}
+
+.dark-theme .send-icon {
+  filter: brightness(0) invert(1);
 }

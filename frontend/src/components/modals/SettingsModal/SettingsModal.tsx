@@ -1,4 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
+import { useUIStore, type Theme, type FontSize } from '../../../stores/uiStore';
+import { translations, type Language } from '../../../utils/translations';
 import './SettingsModal.css';
 
 interface SettingsModalProps {
@@ -7,30 +9,49 @@ interface SettingsModalProps {
 }
 
 const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
+  const {
+    theme, setTheme,
+    language, setLanguage,
+    fontSize, setFontSize,
+    autoSaveChats, setAutoSaveChats
+  } = useUIStore();
+
+  const t = translations[language as Language] || translations.en;
+
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog.Portal>
         <Dialog.Overlay className="DialogOverlay" />
         <Dialog.Content className="DialogContent">
-          <Dialog.Title className="DialogTitle">Settings</Dialog.Title>
+          <Dialog.Title className="DialogTitle">{t.settings.title}</Dialog.Title>
           <Dialog.Description className="DialogDescription">
-            Customize the application according to your preferences
+            {t.settings.description}
           </Dialog.Description>
 
           <div className="settings-content">
             <div className="settings-section">
-              <h3>Appearance</h3>
+              <h3>{t.settings.appearance}</h3>
               <div className="setting-item">
-                <label htmlFor="theme">Theme</label>
-                <select id="theme" className="setting-select">
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                  <option value="auto">Auto</option>
+                <label htmlFor="theme">{t.settings.theme}</label>
+                <select
+                  id="theme"
+                  className="setting-select"
+                  value={theme}
+                  onChange={(e) => setTheme(e.target.value as Theme)}
+                >
+                  <option value="light">{t.settings.themeLight}</option>
+                  <option value="dark">{t.settings.themeDark}</option>
+                  <option value="system">{t.settings.themeAuto}</option>
                 </select>
               </div>
               <div className="setting-item">
-                <label htmlFor="language">Language</label>
-                <select id="language" className="setting-select">
+                <label htmlFor="language">{t.settings.language}</label>
+                <select
+                  id="language"
+                  className="setting-select"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                >
                   <option value="en">English</option>
                   <option value="ru">Русский</option>
                 </select>
@@ -38,19 +59,30 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
             </div>
 
             <div className="settings-section">
-              <h3>Chat</h3>
+              <h3>{t.settings.chat}</h3>
               <div className="setting-item">
-                <label htmlFor="fontSize">Font Size</label>
-                <select id="fontSize" className="setting-select">
-                  <option value="small">Small</option>
-                  <option value="medium" selected>Medium</option>
-                  <option value="large">Large</option>
+                <label htmlFor="fontSize">{t.settings.fontSize}</label>
+                <select
+                  id="fontSize"
+                  className="setting-select"
+                  value={fontSize}
+                  onChange={(e) => setFontSize(e.target.value as FontSize)}
+                >
+                  <option value="small">{t.settings.fontSizeSmall}</option>
+                  <option value="medium">{t.settings.fontSizeMedium}</option>
+                  <option value="large">{t.settings.fontSizeLarge}</option>
                 </select>
               </div>
               <div className="setting-item">
-                <label htmlFor="autoSave">Auto-save Chats</label>
+                <label htmlFor="autoSave">{t.settings.autoSave}</label>
                 <div className="toggle-container">
-                  <input type="checkbox" id="autoSave" className="toggle-input" defaultChecked />
+                  <input
+                    type="checkbox"
+                    id="autoSave"
+                    className="toggle-input"
+                    checked={autoSaveChats}
+                    onChange={(e) => setAutoSaveChats(e.target.checked)}
+                  />
                   <label htmlFor="autoSave" className="toggle-label"></label>
                 </div>
               </div>
@@ -59,10 +91,7 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
 
           <div className="dialog-actions">
             <button className="primary-button" onClick={onClose}>
-              Save Changes
-            </button>
-            <button className="secondary-button" onClick={onClose}>
-              Cancel
+              {t.settings.done}
             </button>
           </div>
 

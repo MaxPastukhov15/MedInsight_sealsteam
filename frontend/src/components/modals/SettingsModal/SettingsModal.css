@@ -1,5 +1,5 @@
 .DialogOverlay {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--modal-overlay);
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -9,44 +9,45 @@
 }
 
 .DialogContent {
-  background-color: white;
+  background-color: var(--bg-secondary);
   border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 25px var(--shadow-color);
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 90%;
-  max-width: 600px;
+  max-width: 37.5rem; /* 600px */
   max-height: 85vh;
-  padding: 25px;
+  padding: 1.5625rem; /* 25px */
   z-index: 1001;
   overflow-y: auto;
+  color: var(--text-primary);
 }
 
 .DialogTitle {
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 600;
-  color: #333;
-  margin-bottom: 10px;
+  color: var(--text-primary);
+  margin-bottom: 0.625rem;
 }
 
 .DialogDescription {
-  font-size: 16px;
-  color: #666;
-  margin-bottom: 20px;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
 }
 
 .settings-content {
   display: flex;
   flex-direction: column;
-  gap: 25px;
-  margin-bottom: 30px;
+  gap: 1.5625rem;
+  margin-bottom: 1.875rem;
 }
 
 .settings-section {
-  border-bottom: 1px solid #eee;
-  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1.25rem;
 }
 
 .settings-section:last-child {
@@ -54,40 +55,40 @@
 }
 
 .settings-section h3 {
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 600;
-  color: #333;
-  margin-bottom: 15px;
+  color: var(--text-primary);
+  margin-bottom: 0.9375rem;
 }
 
 .setting-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 0.9375rem;
 }
 
 .setting-item label {
-  font-size: 16px;
-  color: #555;
+  font-size: 1rem;
+  color: var(--text-primary);
   font-weight: 500;
 }
 
 .setting-select {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  background-color: white;
-  font-size: 14px;
-  color: #333;
-  width: 150px;
+  background-color: var(--input-bg);
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  width: 9.375rem; /* 150px */
 }
 
 .toggle-container {
   position: relative;
   display: inline-block;
-  width: 50px;
-  height: 24px;
+  width: 3.125rem; /* 50px */
+  height: 1.5rem; /* 24px */
 }
 
 .toggle-input {
@@ -103,7 +104,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: var(--border-color);
   transition: 0.3s;
   border-radius: 24px;
 }
@@ -111,8 +112,8 @@
 .toggle-label:before {
   position: absolute;
   content: "";
-  height: 18px;
-  width: 18px;
+  height: 1.125rem; /* 18px */
+  width: 1.125rem;
   left: 3px;
   bottom: 3px;
   background-color: white;
@@ -121,76 +122,76 @@
 }
 
 .toggle-input:checked + .toggle-label {
-  background-color: #4CAF50;
+  background-color: var(--success-color);
 }
 
 .toggle-input:checked + .toggle-label:before {
-  transform: translateX(26px);
+  transform: translateX(1.625rem); /* 26px */
 }
 
 .primary-button {
-  background-color: #4CAF50;
+  background-color: var(--primary-color);
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 0.625rem 1.25rem;
   border-radius: 4px;
-  font-size: 16px;
+  font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .primary-button:hover {
-  background-color: #45a049;
+  background-color: var(--primary-hover);
 }
 
 .secondary-button {
-  background-color: #f1f1f1;
-  color: #333;
-  border: 1px solid #ddd;
-  padding: 10px 20px;
+  background-color: var(--button-secondary-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 0.625rem 1.25rem;
   border-radius: 4px;
-  font-size: 16px;
+  font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .secondary-button:hover {
-  background-color: #e1e1e1;
+  background-color: var(--button-secondary-hover);
 }
 
 .danger-button {
-  background-color: #f44336;
+  background-color: var(--error-color);
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 0.5rem 1rem;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 0.875rem;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .danger-button:hover {
-  background-color: #d32f2f;
+  opacity: 0.9;
 }
 
 .dialog-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 0.625rem;
+  margin-top: 1.25rem;
 }
 
 .IconButton {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 0.9375rem;
+  right: 0.9375rem;
   background: transparent;
   border: none;
-  font-size: 20px;
+  font-size: 1.25rem;
   cursor: pointer;
-  color: #666;
-  width: 30px;
-  height: 30px;
+  color: var(--text-secondary);
+  width: 1.875rem;
+  height: 1.875rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -199,7 +200,7 @@
 }
 
 .IconButton:hover {
-  background-color: #f0f0f0;
+  background-color: var(--bg-primary);
 }
 
 @media (min-width: 768px) {
