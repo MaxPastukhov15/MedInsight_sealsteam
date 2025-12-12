@@ -243,8 +243,8 @@ def detect_outbreak(
     IMPORTANT: SQL MUST return exactly these column aliases:
     1. 'date' (DATE)
     2. 'cases' (INT)
-    
-    Example: 
+
+    Example:
     SELECT date, COUNT(*) as cases FROM prescriptions ... GROUP BY date
 
     threshold_sigma: 2.0=loose, 2.5=moderate (default), 3.0=strict
@@ -311,7 +311,7 @@ def detect_geographic_outliers(
     IMPORTANT: SQL MUST return exactly these column aliases:
     1. 'category' (TEXT)
     2. 'value' (INT)
-    
+
     Example:
     SELECT district as category, COUNT(*) as value FROM patients GROUP BY district
 
