@@ -2,9 +2,9 @@ name: docker compose check
 
 on:
   push:
-    branches: ["main"]
+    branches: ["final"]
   pull_request:
-    branches: ["main"]
+    branches: ["final"]
 
 jobs:
   docker-up:
