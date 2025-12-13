@@ -106,6 +106,7 @@ class MedicalGraph:
             base_url="https://openrouter.ai/api/v1",
             model=MODEL_NAME,
             temperature=0,
+            extra_body={"provider": {"sort": "latency"}},
         ).bind_tools(TOOLS, parallel_tool_calls=True)
         self.graph = self._build_graph()
         log("Graph", f"Initialized: {MODEL_NAME}", "G")
