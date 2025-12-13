@@ -242,11 +242,11 @@ class MedicalGraph:
                 return {}
 
             last_msg = state["messages"][-1]
-            
+
             # Если есть tool_calls — не финализируем, пусть выполнятся
             if getattr(last_msg, "tool_calls", None):
                 return {}
-            
+
             content = getattr(last_msg, "content", "") or ""
             content = re.sub(r"<[^>]+>.*?</[^>]+>", "", content, flags=re.DOTALL).strip()
 
@@ -263,7 +263,9 @@ class MedicalGraph:
         builder.add_node("finalize", finalize)
 
         builder.add_edge(START, "agent")
-        builder.add_conditional_edges("agent", should_continue, {"tools": "tools", "end": "finalize", "continue": "agent"})
+        builder.add_conditional_edges(
+            "agent", should_continue, {"tools": "tools", "end": "finalize", "continue": "agent"}
+        )
         builder.add_edge("tools", "agent")
         builder.add_edge("finalize", END)
 
