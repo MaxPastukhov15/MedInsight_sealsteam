@@ -53,6 +53,8 @@ drug_id        trade_name                                          full_name    
 - run_sql: выполнение SQL запроса
 - forecast_trend: ПРОГНОЗ на будущее (требует SQL с колонками date и cases)
 - create_visualization: выполняет Python код для создания графика Plotly
+- detect_outbreak: находит временные аномалии (пики, падения) болезней
+- detect_geographic_outliers: находит отличающиеся от других группы/категории районов/возрастов
 
 ОБЯЗАТЕЛЬНО:
 1. ВСЕГДА вызывай create_visualization после анализа данных!
