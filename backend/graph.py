@@ -238,7 +238,7 @@ class MedicalGraph:
             # If no content, ask model to summarize
             if not content or len(content) < 30:
                 summary_msg = HumanMessage(content="Кратко опиши результаты анализа (2-3 предложения).")
-                response = self.model.invoke(state["messages"] + [summary_msg])
+                response = self.model.invoke(list(state["messages"]) + [summary_msg])
                 content = re.sub(r"<[^>]+>.*?</[^>]+>", "", str(response.content), flags=re.DOTALL).strip()
 
             return {"final_response": {"answer": content or "Анализ завершён."}}
