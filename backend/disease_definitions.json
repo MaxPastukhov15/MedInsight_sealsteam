@@ -1,0 +1,85 @@
+{
+  "groups": {
+    "ORVI": {
+      "description": "Острые респираторные вирусные инфекции",
+      "rules": ["J00-J06", "J20-J22"]
+    },
+    "Influenza": {
+      "description": "Грипп",
+      "rules": ["J09", "J10", "J11"]
+    },
+    "Diabetes": {
+      "description": "Сахарный диабет",
+      "rules": ["E10-E14"]
+    },
+    "Hypertension": {
+      "description": "Гипертензия",
+      "rules": ["I10-I15"]
+    },
+    "IHD": {
+      "description": "Ишемическая болезнь сердца",
+      "type": "range",
+      "rules": ["I20-I25"]
+    },
+    "Intestinal_Infections": {
+      "description": "Кишечные инфекции",
+      "rules": ["A00-A09"]
+    },
+    "Tuberculosis": {
+      "description": "Туберкулез",
+      "rules": ["A15-A19"]
+    },
+    "Sexually_Transmitted_Infections": {
+      "description": "Инфекции, передающиеся преимущественно половым путем",
+      "rules": ["A50-A64"]
+    },
+    "HIV": {
+      "description": "Болезнь, вызванная вирусом иммунодефицита человека (ВИЧ)",
+      "rules": ["B20-B24"]
+    },
+    "Hepatitis": {
+      "description": "Вирусный гепатит",
+      "rules": ["B15-B19"]
+    },
+    "Overweight": {
+      "description": "Ожирение и другие виды избыточности питания",
+      "rules": ["E65-E68"]
+    },
+    "Schizophrenia": {
+      "description": "Шизофрения, шизотипические состояния и бредовые расстройства",
+      "rules": ["F20-F29"]
+    },
+    "Mental_Retardation": {
+      "description": "Умственная отсталость",
+      "rules": ["F70-F79"]
+    },
+    "Adulthood_Personality_Disorders": {
+      "description": "Расстройства личности и поведения в зрелом возрасте",
+      "rules": ["F60-F69"]
+    },
+    "Glaucoma": {
+      "description": "Глаукома",
+      "rules": ["H40", "H41", "H42"]
+    },
+    "Blood_Pressure": {
+      "description": "Болезни, характеризующиеся повышенным кровяным давлением",
+      "rules": ["I10-I15"]
+    },
+    "Pneumonia": {
+      "description": "Пневмония",
+      "rules": ["J12-J18"]
+    },
+    "Liver_Diseases": {
+      "description": "Болезни печени",
+      "rules": ["K70-K77"]
+    },
+    "Appendix": {
+      "description": "Болезни аппендикса (червеобразного отростка)",
+      "rules": ["K35-K38"]
+    },
+    "Male_Diseases": {
+      "description": "Болезни мужских половых органов",
+      "rules": ["N40-N51"]
+    }
+  }
+}
