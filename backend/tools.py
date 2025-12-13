@@ -16,6 +16,7 @@ _db = Database("data/processed")
 _last_chart = None
 _last_forecast = None
 _last_anomaly_data = None
+_last_sql = None
 
 
 def get_last_chart():
@@ -24,6 +25,12 @@ def get_last_chart():
     chart = _last_chart
     _last_chart = None
     return chart
+
+
+def set_last_sql(sql: str):
+    """Store the last executed SQL."""
+    global _last_sql
+    _last_sql = sql
 
 
 def get_last_forecast_data():
@@ -72,8 +79,8 @@ def search_codes(table: Literal["diagnoses", "drugs"], keywords: list[str] | str
     if err:
         return f"Error: {err}"
     if df is None or df.empty:
-        return "No matches found"
-    return df.to_string(index=False)
+        return f"No matches found for: {keywords}. Try different search terms."
+    return f"Found {len(df)} matches:\n{df.to_string(index=False)}\n\nUse these codes in SQL queries with the '{col_id}' column."
 
 
 @tool
@@ -86,12 +93,26 @@ def run_sql(sql: str) -> str:
     - diagnoses: diagnosis_code, diagnosis_name, disease_class
     - medications: drug_id, trade_name, full_name, dosage, price
     """
+    global _last_sql
     df, err = _db.execute(sql)
     if err:
         return f"SQL Error: {err}"
     if df is None or df.empty:
         return "Query returned no results"
-    return f"Rows: {len(df)}, Columns: {list(df.columns)}\n{df.head(20).to_string(index=False)}"
+    _last_sql = sql
+    
+    # Build rich output
+    total = len(df)
+    cols = list(df.columns)
+    preview = df.head(50).to_string(index=False)
+    
+    # Add stats for numeric columns
+    stats = []
+    for col in df.select_dtypes(include=[np.number]).columns[:5]:
+        stats.append(f"{col}: min={df[col].min()}, max={df[col].max()}, avg={df[col].mean():.1f}")
+    stats_str = "\nStats: " + "; ".join(stats) if stats else ""
+    
+    return f"Total rows: {total} | Columns: {cols}{stats_str}\n\n{preview}"
 
 
 @tool
@@ -138,13 +159,16 @@ def forecast_trend(
             warnings_text = "\nWarnings: " + "; ".join(result["data_quality"]["warnings"][:3])
 
         msg = (
+            f"Forecast generated ({len(result['forecast'])} points)\n"
             f"Model: {result['model_used']} | Confidence: {result['model_confidence']} | "
-            f"Aggregation: {result['data_quality']['aggregation']}{warnings_text}\n\n"
+            f"Aggregation: {result['data_quality']['aggregation']}{warnings_text}\n"
+            f"Historical data: {result['data_quality'].get('original_points', 'N/A')} points\n\n"
         )
-        for item in result["forecast"][:7]:
+        for item in result["forecast"][:10]:
             msg += f"{item['date']}: {item['predicted']} (CI: {item['lower_bound']}-{item['upper_bound']})\n"
-        if len(result["forecast"]) > 7:
-            msg += f"... ({len(result['forecast']) - 7} more points)"
+        if len(result["forecast"]) > 10:
+            msg += f"... ({len(result['forecast']) - 10} more points)\n"
+        msg += "\nUse create_visualization with forecast_df to plot this forecast."
 
         return msg
     except ForecastError as e:
@@ -157,27 +181,29 @@ def forecast_trend(
 def create_visualization(code: str) -> str:
     """Execute Python code to create a Plotly visualization.
 
-    IMPORTANT: There is NO pre-existing 'df' variable! You MUST fetch data first using db.execute().
-
     Available variables:
+    - df: DataFrame from the last run_sql query (may be None if no prior query)
     - db: Database instance with db.execute(sql) -> (df, err)
     - pd, px, go, np: pandas, plotly.express, plotly.graph_objects, numpy
     - forecast_df: DataFrame from last forecast_trend call (columns: date, predicted, lower_bound, upper_bound)
+    - anomaly_data: Data from last detect_outbreak/detect_geographic_outliers call
     - datetime, timedelta, json
 
     REQUIRED: Assign final figure to variable `fig`.
 
-    CORRECT example:
-        df, err = db.execute("SELECT district, COUNT(*) as cnt FROM patients GROUP BY district")
+    Example:
         fig = px.bar(df, x='district', y='cnt', title='Patients by District')
-
-    WRONG (will fail with 'df is not defined'):
-        fig = px.bar(df, x='district', y='cnt')  # ERROR: df does not exist!
     """
-    global _last_chart, _last_forecast
+    global _last_chart, _last_forecast, _last_sql
+
+    # Auto-fetch df from last SQL if available
+    df = None
+    if _last_sql:
+        df, _ = _db.execute(_last_sql)
 
     local_vars = {
         "db": _db,
+        "df": df,
         "pd": pd,
         "px": px,
         "go": go,
@@ -189,37 +215,9 @@ def create_visualization(code: str) -> str:
         "json": json,
     }
 
-    safe_builtins = {
-        "len": len,
-        "range": range,
-        "enumerate": enumerate,
-        "zip": zip,
-        "list": list,
-        "dict": dict,
-        "set": set,
-        "tuple": tuple,
-        "str": str,
-        "int": int,
-        "float": float,
-        "bool": bool,
-        "min": min,
-        "max": max,
-        "sum": sum,
-        "abs": abs,
-        "round": round,
-        "sorted": sorted,
-        "reversed": reversed,
-        "filter": filter,
-        "map": map,
-        "any": any,
-        "all": all,
-        "isinstance": isinstance,
-        "type": type,
-        "print": print,
-        "None": None,
-        "True": True,
-        "False": False,
-    }
+    import builtins
+    safe_builtins = {k: getattr(builtins, k) for k in dir(builtins) if not k.startswith('_')}
+    safe_builtins["__import__"] = __import__
 
     try:
         exec(code, {"__builtins__": safe_builtins}, local_vars)
@@ -227,7 +225,19 @@ def create_visualization(code: str) -> str:
         if fig is None:
             return "Error: code must assign figure to 'fig' variable"
         _last_chart = json.loads(fig.to_json())
-        return "Chart created successfully"
+        
+        # Build informative output
+        title = fig.layout.title.text if fig.layout.title and hasattr(fig.layout.title, 'text') else "Untitled"
+        chart_type = fig.data[0].type if fig.data else "unknown"
+        traces = len(fig.data)
+        
+        data_summary = []
+        for i, trace in enumerate(fig.data[:3]):
+            name = trace.name or f"trace_{i}"
+            pts = len(trace.x) if hasattr(trace, 'x') and trace.x is not None else 0
+            data_summary.append(f"{name}: {pts} points")
+        
+        return f"Chart created: '{title}' ({chart_type}, {traces} trace(s))\nData: {', '.join(data_summary)}"
     except Exception as e:
         return f"Error: {e}"
 
@@ -273,10 +283,15 @@ def detect_outbreak(
         if result["total"] == 0:
             return (
                 f"No outbreaks detected in period {result['period']} "
-                f"({result['data_points']} points, threshold {threshold_sigma}σ)"
+                f"({result['data_points']} data points analyzed, threshold {threshold_sigma}σ)\n"
+                f"Data appears stable with no significant anomalies."
             )
 
-        lines = [f"Found {result['total']} outbreak(s) in period {result['period']}:\n"]
+        lines = [
+            f"Outbreak Detection Results ({result['period']})",
+            f"Analyzed {result['data_points']} data points | Threshold: {threshold_sigma}σ",
+            f"Found {result['total']} anomaly(ies):\n"
+        ]
 
         for a in result["anomalies"][:10]:
             sign = "+" if a["direction"] == "spike" else "-"
@@ -291,6 +306,8 @@ def detect_outbreak(
 
         if result.get("warnings"):
             lines.append("\n⚠️ " + result["warnings"][0])
+        
+        lines.append("\nUse create_visualization with anomaly_data to plot these outbreaks.")
 
         return "\n".join(lines)
 
@@ -337,16 +354,18 @@ def detect_geographic_outliers(
 
         if result["total"] == 0:
             msg = (
-                f"No outliers detected ({result['total_categories']} categories)\n"
-                f"Baseline: median={result['baseline_median']} "
-                f"(Q1={result['baseline_q1']}, Q3={result['baseline_q3']})"
+                f"No outliers detected among {result['total_categories']} categories\n"
+                f"Baseline stats: median={result['baseline_median']}, "
+                f"Q1={result['baseline_q1']}, Q3={result['baseline_q3']}\n"
+                f"Data distribution appears normal."
             )
         else:
             msg = (
-                f"Geographic Outlier Detection (IQR method)\n"
-                f"Baseline: median={result['baseline_median']} "
-                f"(Q1={result['baseline_q1']}, Q3={result['baseline_q3']})\n"
-                f"Found {result['total']} outliers:\n\n"
+                f"Geographic Outlier Detection ({result['total_categories']} categories analyzed)\n"
+                f"Method: IQR with {sensitivity}x multiplier\n"
+                f"Baseline: median={result['baseline_median']}, "
+                f"Q1={result['baseline_q1']}, Q3={result['baseline_q3']}\n"
+                f"Found {result['total']} outlier(s):\n\n"
             )
             # I'm showing off a bit, but it might look really good.
             for anomaly in result["anomalies"]:
@@ -362,6 +381,9 @@ def detect_geographic_outliers(
 
         if result.get("warnings"):
             msg += "\n⚠️ " + "\n".join(result["warnings"][:2])
+        
+        if result["total"] > 0:
+            msg += "\nUse create_visualization with anomaly_data to plot these outliers."
 
         return msg
 
