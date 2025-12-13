@@ -186,13 +186,25 @@ def create_visualization(code: str) -> str:
     - db: Database instance with db.execute(sql) -> (df, err)
     - pd, px, go, np: pandas, plotly.express, plotly.graph_objects, numpy
     - forecast_df: DataFrame from last forecast_trend call (columns: date, predicted, lower_bound, upper_bound)
-    - anomaly_data: Data from last detect_outbreak/detect_geographic_outliers call
+    - anomaly_data: Dict from detect_outbreak with structure:
+        - anomaly_data['components']['dates']: list of date strings
+        - anomaly_data['components']['cases']: list of case counts
+        - anomaly_data['components']['trend']: list of trend values
+        - anomaly_data['components']['anomaly_flags']: list of booleans
+        - anomaly_data['anomalies']: list of dicts with 'date', 'actual', 'expected', 'z_score'
     - datetime, timedelta, json
 
     REQUIRED: Assign final figure to variable `fig`.
 
-    Example:
-        fig = px.bar(df, x='district', y='cnt', title='Patients by District')
+    Example for anomaly visualization:
+        dates = anomaly_data['components']['dates']
+        cases = anomaly_data['components']['cases']
+        flags = anomaly_data['components']['anomaly_flags']
+        fig = go.Figure()
+        fig.add_scatter(x=dates, y=cases, mode='lines', name='Случаи')
+        anomaly_dates = [d for d, f in zip(dates, flags) if f]
+        anomaly_cases = [c for c, f in zip(cases, flags) if f]
+        fig.add_scatter(x=anomaly_dates, y=anomaly_cases, mode='markers', marker=dict(color='red', size=10), name='Аномалии')
     """
     global _last_chart, _last_forecast, _last_sql
 
@@ -216,12 +228,13 @@ def create_visualization(code: str) -> str:
     }
 
     import builtins
+    from textwrap import dedent
 
     safe_builtins = {k: getattr(builtins, k) for k in dir(builtins) if not k.startswith("_")}
     safe_builtins["__import__"] = __import__
 
     try:
-        exec(code, {"__builtins__": safe_builtins}, local_vars)
+        exec(dedent(code), {"__builtins__": safe_builtins}, local_vars)
         fig = local_vars.get("fig")
         if fig is None:
             return "Error: code must assign figure to 'fig' variable"

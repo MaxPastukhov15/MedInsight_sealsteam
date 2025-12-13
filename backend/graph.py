@@ -18,7 +18,9 @@ MAX_STEPS = int(os.getenv("MAX_STEPS", "10"))
 MODEL_NAME = os.getenv("MODEL_NAME", "qwen/qwen3-32b")
 
 
-SYSTEM_PROMPT = """Ты медицинский аналитик данных. Отвечай на русском языке. НЕ ДУМАЙ ВСЛУХ.
+SYSTEM_PROMPT = """Ты медицинский аналитик данных. Отвечай на русском языке.
+
+КРИТИЧЕСКИ ВАЖНО: НЕ ДУМАЙ ВСЛУХ! НЕ ПИШИ РАССУЖДЕНИЯ! При запросе на аномалии/выбросы — СРАЗУ вызывай detect_outbreak, без текста!
 
 СХЕМА БАЗЫ ДАННЫХ:
 - patients:
@@ -53,6 +55,8 @@ drug_id        trade_name                                          full_name    
 - run_sql: выполнение SQL запроса
 - forecast_trend: ПРОГНОЗ на будущее (требует SQL с колонками date и cases),
 - create_visualization: выполняет Python код для создания графика Plotly, делай наиболее впечатляющие графики, а не простые, но при этом сохраняй удобо-читаемость.
+- detect_outbreak: находит временные аномалии (пики, падения) болезней
+- detect_geographic_outliers: находит отличающиеся от других группы/категории районов/возрастов
 
 После сбора и генерации достаточного количества информации ты ОБЯЗАН поменять состояние на final_response и написать максимально подробный ответ на запрос пользователя с учетом полученной из вызова инструментов информации и контекста прощлых сообщений. Наполни ответ наиболее красивым, понятным и удобно читаемым форматированием.
 ВАЖНО: ты ОБЯЗАН написать как можно более полный и удобо-читаемый ответ пользователю. Делай форматирование, используй контекст.
@@ -64,6 +68,8 @@ drug_id        trade_name                                          full_name    
 3. Если пользователь спрашивает про регионы, это, если прямо не указано обратное, именно district, а не region.
 4. НИКОГДА не вызывай forecast_trend, если пользователь не просил прогноз или из контекста не очевидно, что пользователь хочет именно запрос.
 5. Помни, что обязательно надо встраивать результаты прогноза в визуализацию, а не просто заменять им весь график
+6. Если пользователь просит найти АНОМАЛИИ/ВЫБРОСЫ/ВСПЫШКИ/ОТКЛОНЕНИЯ во временных данных - ОБЯЗАТЕЛЬНО вызывай detect_outbreak! НИКОГДА не анализируй аномалии вручную - ВСЕГДА используй инструмент detect_outbreak. Даже если у тебя уже есть данные из предыдущего SQL, ты ДОЛЖЕН вызвать detect_outbreak с соответствующим SQL-запросом.
+7. Если пользователь просит найти аномалии по РАЙОНАМ/РЕГИОНАМ/КАТЕГОРИЯМ - вызывай detect_geographic_outliers.
 
 Если пользователь захотел получить инсайт по которому есть полная информация и он не указал, что ему нужен прогноз, то ты не должен вызывать forecast_trend. Пример: в базе данных есть вся информация про 2019-2024 годы, поэтому на запрос "тренд X на 2019-2024 годы" НЕ требует вызова forecast_trend.
 
@@ -225,6 +231,10 @@ class MedicalGraph:
             if tool_calls:
                 return "tools"
 
+            # Если найдены коды, но нет SQL результата — вернуться в agent
+            if state.get("found_codes") and not state.get("last_sql"):
+                return "continue"
+
             return "end"
 
         def finalize(state: MedicalAgentState) -> dict:
@@ -232,6 +242,11 @@ class MedicalGraph:
                 return {}
 
             last_msg = state["messages"][-1]
+            
+            # Если есть tool_calls — не финализируем, пусть выполнятся
+            if getattr(last_msg, "tool_calls", None):
+                return {}
+            
             content = getattr(last_msg, "content", "") or ""
             content = re.sub(r"<[^>]+>.*?</[^>]+>", "", content, flags=re.DOTALL).strip()
 
@@ -248,7 +263,7 @@ class MedicalGraph:
         builder.add_node("finalize", finalize)
 
         builder.add_edge(START, "agent")
-        builder.add_conditional_edges("agent", should_continue, {"tools": "tools", "end": "finalize"})
+        builder.add_conditional_edges("agent", should_continue, {"tools": "tools", "end": "finalize", "continue": "agent"})
         builder.add_edge("tools", "agent")
         builder.add_edge("finalize", END)
 
