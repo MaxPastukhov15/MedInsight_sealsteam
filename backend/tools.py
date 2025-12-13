@@ -100,18 +100,18 @@ def run_sql(sql: str) -> str:
     if df is None or df.empty:
         return "Query returned no results"
     _last_sql = sql
-    
+
     # Build rich output
     total = len(df)
     cols = list(df.columns)
     preview = df.head(50).to_string(index=False)
-    
+
     # Add stats for numeric columns
     stats = []
     for col in df.select_dtypes(include=[np.number]).columns[:5]:
         stats.append(f"{col}: min={df[col].min()}, max={df[col].max()}, avg={df[col].mean():.1f}")
     stats_str = "\nStats: " + "; ".join(stats) if stats else ""
-    
+
     return f"Total rows: {total} | Columns: {cols}{stats_str}\n\n{preview}"
 
 
@@ -216,7 +216,8 @@ def create_visualization(code: str) -> str:
     }
 
     import builtins
-    safe_builtins = {k: getattr(builtins, k) for k in dir(builtins) if not k.startswith('_')}
+
+    safe_builtins = {k: getattr(builtins, k) for k in dir(builtins) if not k.startswith("_")}
     safe_builtins["__import__"] = __import__
 
     try:
@@ -225,18 +226,18 @@ def create_visualization(code: str) -> str:
         if fig is None:
             return "Error: code must assign figure to 'fig' variable"
         _last_chart = json.loads(fig.to_json())
-        
+
         # Build informative output
-        title = fig.layout.title.text if fig.layout.title and hasattr(fig.layout.title, 'text') else "Untitled"
+        title = fig.layout.title.text if fig.layout.title and hasattr(fig.layout.title, "text") else "Untitled"
         chart_type = fig.data[0].type if fig.data else "unknown"
         traces = len(fig.data)
-        
+
         data_summary = []
         for i, trace in enumerate(fig.data[:3]):
             name = trace.name or f"trace_{i}"
-            pts = len(trace.x) if hasattr(trace, 'x') and trace.x is not None else 0
+            pts = len(trace.x) if hasattr(trace, "x") and trace.x is not None else 0
             data_summary.append(f"{name}: {pts} points")
-        
+
         return f"Chart created: '{title}' ({chart_type}, {traces} trace(s))\nData: {', '.join(data_summary)}"
     except Exception as e:
         return f"Error: {e}"
@@ -290,7 +291,7 @@ def detect_outbreak(
         lines = [
             f"Outbreak Detection Results ({result['period']})",
             f"Analyzed {result['data_points']} data points | Threshold: {threshold_sigma}σ",
-            f"Found {result['total']} anomaly(ies):\n"
+            f"Found {result['total']} anomaly(ies):\n",
         ]
 
         for a in result["anomalies"][:10]:
@@ -306,7 +307,7 @@ def detect_outbreak(
 
         if result.get("warnings"):
             lines.append("\n⚠️ " + result["warnings"][0])
-        
+
         lines.append("\nUse create_visualization with anomaly_data to plot these outbreaks.")
 
         return "\n".join(lines)
@@ -381,7 +382,7 @@ def detect_geographic_outliers(
 
         if result.get("warnings"):
             msg += "\n⚠️ " + "\n".join(result["warnings"][:2])
-        
+
         if result["total"] > 0:
             msg += "\nUse create_visualization with anomaly_data to plot these outliers."
 
