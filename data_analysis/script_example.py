@@ -12,9 +12,9 @@ if __name__ == "__main__":
     try:
         diagnoses, prescriptions, patients, medications = load_data()
 
-        unique_years = sorted(prescriptions['year'].dropna().unique().tolist()) # 2019-2025
-        unique_diseases = sorted(diagnoses['diagnosis_name'].dropna().unique().tolist()) # 14678 cases
-        unique_districts = sorted(patients['district'].dropna().unique().tolist()) # 28 cases
+        unique_years = sorted(prescriptions["year"].dropna().unique().tolist())  # 2019-2025
+        unique_diseases = sorted(diagnoses["diagnosis_name"].dropna().unique().tolist())  # 14678 cases
+        unique_districts = sorted(patients["district"].dropna().unique().tolist())  # 28 cases
 
         # CONFIGURATION SECTION
         target_year = unique_years[-1] if unique_years else 2025
@@ -37,7 +37,7 @@ if __name__ == "__main__":
                 patients=patients,
                 disease_code=target_code,
                 disease_name=None,
-                district=target_district
+                district=target_district,
             )
         else:
             print(f"\nRunning analysis for Name: {target_disease_name} ({target_year})")
@@ -48,7 +48,7 @@ if __name__ == "__main__":
                 patients=patients,
                 disease_code=None,
                 disease_name=target_disease_name,
-                district=target_district
+                district=target_district,
             )
 
         output_filename = f"analysis_result_{file_id}_{target_year}.json"
@@ -62,4 +62,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
         import traceback
+
         traceback.print_exc()

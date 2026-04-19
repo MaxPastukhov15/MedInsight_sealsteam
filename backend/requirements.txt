@@ -25,3 +25,6 @@ uvicorn[standard]>=0.22.0
 # Forecast
 prophet
 statsmodels
+
+# cache
+redis>=5.0.0

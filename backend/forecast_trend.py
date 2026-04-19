@@ -96,24 +96,23 @@ def validate_dataframe(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
     return df, warnings_list
 
 
-def fill_missing_dates(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
+def fill_missing_dates(df: pd.DataFrame, max_interpolation_gap: int = 14) -> Tuple[pd.DataFrame, List[str]]:
     """
-    Fills missing dates in a time series using a hybrid adaptive strategy.
+    Fills missing dates in a time series using adaptive interpolation.
 
-    The function regularizes the time series to a daily frequency and fills gaps based on their duration:
-    1. Small gaps (<= 3 days): Linear Interpolation.
-       Rationale: Short absences are likely random noise or weekends; trend continuity is assumed.
-    2. Large gaps (> 3 days): Forward Fill (Last Observation Carried Forward).
-       Rationale: Long absences indicate structural issues; inventing trends via interpolation is risky
-       in medical contexts (hallucination risk).
+    Strategy:
+    1. Small gaps (<= 3 days): Linear Interpolation
+    2. Medium gaps (4-14 days): Linear Interpolation + WARNING
+    3. Large gaps (> max_interpolation_gap): LINEAR INTERPOLATION + CRITICAL WARNING
 
     Args:
-        df: Input DataFrame containing 'date' (datetime) and 'cases' (numeric) columns.
+        df: Input DataFrame with 'date' (datetime) and 'cases' (numeric).
+        max_interpolation_gap: Threshold for critical warnings (default 14 days).
 
     Returns:
         Tuple[pd.DataFrame, List[str]]:
-            - Processed DataFrame with continuous daily dates and filled values.
-            - List of execution warnings/logs describing the actions taken.
+            - Processed DataFrame with continuous dates and filled values.
+            - List of warnings describing actions taken.
     """
     warnings_list: list[str] = []
 
@@ -134,41 +133,49 @@ def fill_missing_dates(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
 
     # Identify and measure gaps
     is_missing = df["cases"].isna()
-
     gap_groups = (is_missing != is_missing.shift()).cumsum()
     gap_sizes = df.groupby(gap_groups)["cases"].transform("size")
 
-    # Define Masks for different strategies
-    small_gaps_mask = is_missing & (gap_sizes <= 3)
-    large_gaps_mask = is_missing & (gap_sizes > 3)
+    small_gaps = is_missing & (gap_sizes <= 3)
+    medium_gaps = is_missing & (gap_sizes > 3) & (gap_sizes <= max_interpolation_gap)
+    large_gaps = is_missing & (gap_sizes > max_interpolation_gap)
 
-    n_small = small_gaps_mask.sum()
-    n_large = large_gaps_mask.sum()
+    n_small = small_gaps.sum()
+    n_medium = medium_gaps.sum()
+    n_large = large_gaps.sum()
 
+    if total_missing > 0:
+        df["cases"] = df["cases"].interpolate(method="linear")
+
+    # Generate warnings
     if n_small > 0:
-        warnings_list.append(f"Interpolated {n_small} days (gaps <= 3 days)")
+        warnings_list.append(f"Interpolated {n_small} days in small gaps (≤3 days)")
+
+    if n_medium > 0:
+        max_medium_gap = gap_sizes[medium_gaps].max() if n_medium > 0 else 0
+        warnings_list.append(
+            f"  Interpolated {n_medium} days in medium gaps (4-{max_interpolation_gap} days, "
+            f"max gap: {int(max_medium_gap)} days). Data quality may be reduced."
+        )
+
     if n_large > 0:
-        warnings_list.append(f"Forward-filled {n_large} days (gaps > 3 days)")
+        large_gap_dates = df[large_gaps].index.tolist()[:3]
+        max_large_gap = gap_sizes[large_gaps].max()
+        warnings_list.append(
+            f"  CRITICAL: Interpolated {n_large} days in large gaps (>{max_interpolation_gap} days, "
+            f"max gap: {int(max_large_gap)} days). Forecast reliability compromised. "
+            f"Consider excluding data around: {[d.strftime('%Y-%m-%d') for d in large_gap_dates]}"
+        )
 
-    # Strategy A: Linear Interpolation for small gaps
-    if n_small > 0:
-        interpolated_series = df["cases"].interpolate(method="linear")
-        df.loc[small_gaps_mask, "cases"] = interpolated_series[small_gaps_mask]
-
-    # Strategy B: Forward Fill for large gaps
-    if n_large > 0:
-        ffilled_series = df["cases"].ffill()
-        df.loc[large_gaps_mask, "cases"] = ffilled_series[large_gaps_mask]
-
-    # Edge сase handling
+    # Edge case: handle leading/trailing NaNs (if interpolation missed them)
     if df["cases"].isna().any():
-        warnings_list.append("Backward-filled leading missing values")
-        df["cases"] = df["cases"].bfill()
+        warnings_list.append("Backward-filled leading/trailing missing values")
+        df["cases"] = df["cases"].bfill().ffill()
 
+    # Reinsurance
     df["cases"] = df["cases"].fillna(0)
 
     df = df.reset_index()
-
     return df, warnings_list
 
 
@@ -292,26 +299,29 @@ def forecast_with_sarima(df: pd.DataFrame, days: int) -> pd.DataFrame:
             warnings.simplefilter("ignore")
             fitted = model.fit(disp=False, maxiter=200)
 
-        # Generate forecast
-        forecast = fitted.get_forecast(steps=days)
-        forecast_df = forecast.summary_frame(alpha=0.05)  # 95% CI
-
         last_date = df["date"].max()
-
-        # Determine frequency for future dates
         future_freq = "D"
+        forecast_steps = days  # По умолчанию = дни
+
         if len(df) > 1:
             dt1 = df["date"].iloc[1]
             dt0 = df["date"].iloc[0]
             delta = dt1 - dt0
+
             if delta.days >= 28:
                 future_freq = "MS"
+                forecast_steps = max(1, days // 30)
             elif delta.days >= 6:
                 future_freq = "W-MON"
+                forecast_steps = max(1, days // 7)
+
+        # Generate forecast
+        forecast = fitted.get_forecast(steps=forecast_steps)
+        forecast_df = forecast.summary_frame(alpha=0.05)  # 95% CI
 
         future_dates = pd.date_range(
             start=last_date + timedelta(days=1) if future_freq == "D" else last_date,
-            periods=days + 1 if future_freq != "D" else days,
+            periods=forecast_steps + 1 if future_freq != "D" else forecast_steps,
             freq=future_freq,
         )
         # If aggregation, start from next period
@@ -320,7 +330,7 @@ def forecast_with_sarima(df: pd.DataFrame, days: int) -> pd.DataFrame:
 
         result = pd.DataFrame(
             {
-                "date": future_dates[:days],
+                "date": future_dates[:forecast_steps],
                 "predicted": forecast_df["mean"].values,
                 "lower_bound": forecast_df["mean_ci_lower"].values,
                 "upper_bound": forecast_df["mean_ci_upper"].values,

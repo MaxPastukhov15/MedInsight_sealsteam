@@ -18,7 +18,9 @@ MAX_STEPS = int(os.getenv("MAX_STEPS", "10"))
 MODEL_NAME = os.getenv("MODEL_NAME", "qwen/qwen3-32b")
 
 
-SYSTEM_PROMPT = """Ты медицинский аналитик данных. Отвечай на русском языке. НЕ ДУМАЙ ВСЛУХ.
+SYSTEM_PROMPT = """Ты медицинский аналитик данных. Отвечай на русском языке.
+
+КРИТИЧЕСКИ ВАЖНО: НЕ ДУМАЙ ВСЛУХ! НЕ ПИШИ РАССУЖДЕНИЯ! При запросе на аномалии/выбросы — СРАЗУ вызывай detect_outbreak, без текста!
 
 СХЕМА БАЗЫ ДАННЫХ:
 - patients:
@@ -51,12 +53,25 @@ drug_id        trade_name                                          full_name    
 ИНСТРУМЕНТЫ:
 - search_codes: поиск кодов диагнозов/препаратов
 - run_sql: выполнение SQL запроса
-- forecast_trend: ПРОГНОЗ на будущее (требует SQL с колонками date и cases)
-- create_visualization: выполняет Python код для создания графика Plotly
+- forecast_trend: ПРОГНОЗ на будущее (требует SQL с колонками date и cases),
+- create_visualization: выполняет Python код для создания графика Plotly, делай наиболее впечатляющие графики, а не простые, но при этом сохраняй удобо-читаемость.
+- detect_outbreak: находит временные аномалии (пики, падения) болезней
+- detect_geographic_outliers: находит отличающиеся от других группы/категории районов/возрастов
+
+После сбора и генерации достаточного количества информации ты ОБЯЗАН поменять состояние на final_response и написать максимально подробный ответ на запрос пользователя с учетом полученной из вызова инструментов информации и контекста прощлых сообщений. Наполни ответ наиболее красивым, понятным и удобно читаемым форматированием.
+ВАЖНО: ты ОБЯЗАН написать как можно более полный и удобо-читаемый ответ пользователю. Делай форматирование, используй контекст.
+Помни, что ты не должен оставлять ссылки на визуалицию в виде [график](plotly.png), с точки зрения пользователя у него появляется кнопка Open chart (она появляется независимо от того, что ты написал в ответе, поэтому просто имей это ввиду, не "создавай" эту кнопку в ответе).
 
 ОБЯЗАТЕЛЬНО:
-1. ВСЕГДА вызывай create_visualization после анализа данных!
-2. Если пользователь просит ПРОГНОЗ/ТРЕНД/ПРЕДСКАЗАНИЕ - вызывай forecast_trend!
+1. Практически ВСЕГДА вызывай create_visualization после анализа данных, если это подходит под контекст (очень редко это не подходит под контекст)!
+2. Если пользователь просит ПРОГНОЗ/ТРЕНД/ПРЕДСКАЗАНИЕ - вызывай forecast_trend, НО не вызывай его, если не требуется, это КРАЙНЕ важно!
+3. Если пользователь спрашивает про регионы, это, если прямо не указано обратное, именно district, а не region.
+4. НИКОГДА не вызывай forecast_trend, если пользователь не просил прогноз или из контекста не очевидно, что пользователь хочет именно запрос.
+5. Помни, что обязательно надо встраивать результаты прогноза в визуализацию, а не просто заменять им весь график
+6. Если пользователь просит найти АНОМАЛИИ/ВЫБРОСЫ/ВСПЫШКИ/ОТКЛОНЕНИЯ во временных данных - ОБЯЗАТЕЛЬНО вызывай detect_outbreak! НИКОГДА не анализируй аномалии вручную - ВСЕГДА используй инструмент detect_outbreak. Даже если у тебя уже есть данные из предыдущего SQL, ты ДОЛЖЕН вызвать detect_outbreak с соответствующим SQL-запросом.
+7. Если пользователь просит найти аномалии по РАЙОНАМ/РЕГИОНАМ/КАТЕГОРИЯМ - вызывай detect_geographic_outliers.
+
+Если пользователь захотел получить инсайт по которому есть полная информация и он не указал, что ему нужен прогноз, то ты не должен вызывать forecast_trend. Пример: в базе данных есть вся информация про 2019-2024 годы, поэтому на запрос "тренд X на 2019-2024 годы" НЕ требует вызова forecast_trend.
 
 SQL ПРИМЕРЫ:
 -- Тренд по месяцам:
@@ -93,7 +108,7 @@ fig.update_layout(title='Прогноз')
 - {CODES} заменяется на найденные коды
 - forecast_df содержит результат forecast_trend (date, predicted, lower_bound, upper_bound)
 - Если пользователь просит ТОЛЬКО прогноз - НЕ добавляй исторические данные на график!
-- Финальный ответ: краткий анализ с числами"""
+- Финальный ответ: полный анализ с числами"""
 
 
 class MedicalGraph:
@@ -104,6 +119,7 @@ class MedicalGraph:
             base_url="https://openrouter.ai/api/v1",
             model=MODEL_NAME,
             temperature=0,
+            extra_body={"provider": {"sort": "latency"}},
         ).bind_tools(TOOLS, parallel_tool_calls=True)
         self.graph = self._build_graph()
         log("Graph", f"Initialized: {MODEL_NAME}", "G")
@@ -215,6 +231,10 @@ class MedicalGraph:
             if tool_calls:
                 return "tools"
 
+            # Если найдены коды, но нет SQL результата — вернуться в agent
+            if state.get("found_codes") and not state.get("last_sql"):
+                return "continue"
+
             return "end"
 
         def finalize(state: MedicalAgentState) -> dict:
@@ -222,17 +242,30 @@ class MedicalGraph:
                 return {}
 
             last_msg = state["messages"][-1]
+
+            # Если есть tool_calls — не финализируем, пусть выполнятся
+            if getattr(last_msg, "tool_calls", None):
+                return {}
+
             content = getattr(last_msg, "content", "") or ""
             content = re.sub(r"<[^>]+>.*?</[^>]+>", "", content, flags=re.DOTALL).strip()
 
-            return {"final_response": {"answer": content or "Анализ завершен."}}
+            # If no content, ask model to summarize
+            if not content or len(content) < 30:
+                summary_msg = HumanMessage(content="Кратко опиши результаты анализа (2-3 предложения).")
+                response = self.model.invoke(list(state["messages"]) + [summary_msg])
+                content = re.sub(r"<[^>]+>.*?</[^>]+>", "", str(response.content), flags=re.DOTALL).strip()
+
+            return {"final_response": {"answer": content or "Анализ завершён."}}
 
         builder.add_node("agent", agent)
         builder.add_node("tools", tools_node)
         builder.add_node("finalize", finalize)
 
         builder.add_edge(START, "agent")
-        builder.add_conditional_edges("agent", should_continue, {"tools": "tools", "end": "finalize"})
+        builder.add_conditional_edges(
+            "agent", should_continue, {"tools": "tools", "end": "finalize", "continue": "agent"}
+        )
         builder.add_edge("tools", "agent")
         builder.add_edge("finalize", END)
 

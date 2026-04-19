@@ -15,6 +15,8 @@ from backend.database import Database
 _db = Database("data/processed")
 _last_chart = None
 _last_forecast = None
+_last_anomaly_data = None
+_last_sql = None
 
 
 def get_last_chart():
@@ -23,6 +25,28 @@ def get_last_chart():
     chart = _last_chart
     _last_chart = None
     return chart
+
+
+def set_last_sql(sql: str):
+    """Store the last executed SQL."""
+    global _last_sql
+    _last_sql = sql
+
+
+def get_last_forecast_data():
+    """Get and clear the last forecast data."""
+    global _last_forecast
+    data = _last_forecast
+    _last_forecast = None
+    return data
+
+
+def get_last_anomaly_data():
+    """Get and clear the last anomaly detection data."""
+    global _last_anomaly_data
+    data = _last_anomaly_data
+    _last_anomaly_data = None
+    return data
 
 
 @tool
@@ -55,8 +79,8 @@ def search_codes(table: Literal["diagnoses", "drugs"], keywords: list[str] | str
     if err:
         return f"Error: {err}"
     if df is None or df.empty:
-        return "No matches found"
-    return df.to_string(index=False)
+        return f"No matches found for: {keywords}. Try different search terms."
+    return f"Found {len(df)} matches:\n{df.to_string(index=False)}\n\nUse these codes in SQL queries with the '{col_id}' column."
 
 
 @tool
@@ -69,12 +93,26 @@ def run_sql(sql: str) -> str:
     - diagnoses: diagnosis_code, diagnosis_name, disease_class
     - medications: drug_id, trade_name, full_name, dosage, price
     """
+    global _last_sql
     df, err = _db.execute(sql)
     if err:
         return f"SQL Error: {err}"
     if df is None or df.empty:
         return "Query returned no results"
-    return f"Rows: {len(df)}, Columns: {list(df.columns)}\n{df.head(20).to_string(index=False)}"
+    _last_sql = sql
+
+    # Build rich output
+    total = len(df)
+    cols = list(df.columns)
+    preview = df.head(50).to_string(index=False)
+
+    # Add stats for numeric columns
+    stats = []
+    for col in df.select_dtypes(include=[np.number]).columns[:5]:
+        stats.append(f"{col}: min={df[col].min()}, max={df[col].max()}, avg={df[col].mean():.1f}")
+    stats_str = "\nStats: " + "; ".join(stats) if stats else ""
+
+    return f"Total rows: {total} | Columns: {cols}{stats_str}\n\n{preview}"
 
 
 @tool
@@ -121,13 +159,16 @@ def forecast_trend(
             warnings_text = "\nWarnings: " + "; ".join(result["data_quality"]["warnings"][:3])
 
         msg = (
+            f"Forecast generated ({len(result['forecast'])} points)\n"
             f"Model: {result['model_used']} | Confidence: {result['model_confidence']} | "
-            f"Aggregation: {result['data_quality']['aggregation']}{warnings_text}\n\n"
+            f"Aggregation: {result['data_quality']['aggregation']}{warnings_text}\n"
+            f"Historical data: {result['data_quality'].get('original_points', 'N/A')} points\n\n"
         )
-        for item in result["forecast"][:7]:
+        for item in result["forecast"][:10]:
             msg += f"{item['date']}: {item['predicted']} (CI: {item['lower_bound']}-{item['upper_bound']})\n"
-        if len(result["forecast"]) > 7:
-            msg += f"... ({len(result['forecast']) - 7} more points)"
+        if len(result["forecast"]) > 10:
+            msg += f"... ({len(result['forecast']) - 10} more points)\n"
+        msg += "\nUse create_visualization with forecast_df to plot this forecast."
 
         return msg
     except ForecastError as e:
@@ -140,78 +181,259 @@ def forecast_trend(
 def create_visualization(code: str) -> str:
     """Execute Python code to create a Plotly visualization.
 
-    IMPORTANT: There is NO pre-existing 'df' variable! You MUST fetch data first using db.execute().
-
     Available variables:
+    - df: DataFrame from the last run_sql query (may be None if no prior query)
     - db: Database instance with db.execute(sql) -> (df, err)
     - pd, px, go, np: pandas, plotly.express, plotly.graph_objects, numpy
     - forecast_df: DataFrame from last forecast_trend call (columns: date, predicted, lower_bound, upper_bound)
+    - anomaly_data: Dict from detect_outbreak with structure:
+        - anomaly_data['components']['dates']: list of date strings
+        - anomaly_data['components']['cases']: list of case counts
+        - anomaly_data['components']['trend']: list of trend values
+        - anomaly_data['components']['anomaly_flags']: list of booleans
+        - anomaly_data['anomalies']: list of dicts with 'date', 'actual', 'expected', 'z_score'
     - datetime, timedelta, json
 
     REQUIRED: Assign final figure to variable `fig`.
 
-    CORRECT example:
-        df, err = db.execute("SELECT district, COUNT(*) as cnt FROM patients GROUP BY district")
-        fig = px.bar(df, x='district', y='cnt', title='Patients by District')
-
-    WRONG (will fail with 'df is not defined'):
-        fig = px.bar(df, x='district', y='cnt')  # ERROR: df does not exist!
+    Example for anomaly visualization:
+        dates = anomaly_data['components']['dates']
+        cases = anomaly_data['components']['cases']
+        flags = anomaly_data['components']['anomaly_flags']
+        fig = go.Figure()
+        fig.add_scatter(x=dates, y=cases, mode='lines', name='Случаи')
+        anomaly_dates = [d for d, f in zip(dates, flags) if f]
+        anomaly_cases = [c for c, f in zip(cases, flags) if f]
+        fig.add_scatter(x=anomaly_dates, y=anomaly_cases, mode='markers', marker=dict(color='red', size=10), name='Аномалии')
     """
-    global _last_chart, _last_forecast
+    global _last_chart, _last_forecast, _last_sql
+
+    # Auto-fetch df from last SQL if available
+    df = None
+    if _last_sql:
+        df, _ = _db.execute(_last_sql)
 
     local_vars = {
         "db": _db,
+        "df": df,
         "pd": pd,
         "px": px,
         "go": go,
         "np": np,
         "forecast_df": _last_forecast,
+        "anomaly_data": _last_anomaly_data,
         "datetime": datetime,
         "timedelta": timedelta,
         "json": json,
     }
 
-    safe_builtins = {
-        "len": len,
-        "range": range,
-        "enumerate": enumerate,
-        "zip": zip,
-        "list": list,
-        "dict": dict,
-        "set": set,
-        "tuple": tuple,
-        "str": str,
-        "int": int,
-        "float": float,
-        "bool": bool,
-        "min": min,
-        "max": max,
-        "sum": sum,
-        "abs": abs,
-        "round": round,
-        "sorted": sorted,
-        "reversed": reversed,
-        "filter": filter,
-        "map": map,
-        "any": any,
-        "all": all,
-        "isinstance": isinstance,
-        "type": type,
-        "print": print,
-        "None": None,
-        "True": True,
-        "False": False,
-    }
+    import builtins
+    from textwrap import dedent
+
+    safe_builtins = {k: getattr(builtins, k) for k in dir(builtins) if not k.startswith("_")}
+    safe_builtins["__import__"] = __import__
 
     try:
-        exec(code, {"__builtins__": safe_builtins}, local_vars)
+        exec(dedent(code), {"__builtins__": safe_builtins}, local_vars)
         fig = local_vars.get("fig")
         if fig is None:
             return "Error: code must assign figure to 'fig' variable"
         _last_chart = json.loads(fig.to_json())
-        return "Chart created successfully"
+
+        # Build informative output
+        title = fig.layout.title.text if fig.layout.title and hasattr(fig.layout.title, "text") else "Untitled"
+        chart_type = fig.data[0].type if fig.data else "unknown"
+        traces = len(fig.data)
+
+        data_summary = []
+        for i, trace in enumerate(fig.data[:3]):
+            name = trace.name or f"trace_{i}"
+            pts = len(trace.x) if hasattr(trace, "x") and trace.x is not None else 0
+            data_summary.append(f"{name}: {pts} points")
+
+        return f"Chart created: '{title}' ({chart_type}, {traces} trace(s))\nData: {', '.join(data_summary)}"
     except Exception as e:
         return f"Error: {e}"
 
 
-TOOLS = [search_codes, run_sql, forecast_trend, create_visualization]
+@tool
+def detect_outbreak(
+    sql: str,
+    threshold_sigma: float = 2.5,
+) -> str:
+    """
+    Detect temporal disease outbreaks (spikes/drops over time).
+
+    IMPORTANT: SQL MUST return exactly these column aliases:
+    1. 'date' (DATE)
+    2. 'cases' (INT)
+
+    Example:
+    SELECT date, COUNT(*) as cases FROM prescriptions ... GROUP BY date
+
+    threshold_sigma: 2.0=loose, 2.5=moderate (default), 3.0=strict
+    """
+    global _last_anomaly_data
+
+    from backend.anomaly_detection import detect_timeseries_anomalies
+    from backend.forecast_trend import ForecastError
+
+    df, err = _db.execute(sql)
+    if err:
+        return f"SQL Error: {err}"
+    if df is None or df.empty:
+        return "No data for outbreak detection"
+
+    df = df.dropna(subset=["date"])
+
+    try:
+        result = detect_timeseries_anomalies(
+            df=df,
+            threshold_sigma=threshold_sigma,
+        )
+
+        _last_anomaly_data = result
+
+        if result["total"] == 0:
+            return (
+                f"No outbreaks detected in period {result['period']} "
+                f"({result['data_points']} data points analyzed, threshold {threshold_sigma}σ)\n"
+                f"Data appears stable with no significant anomalies."
+            )
+
+        lines = [
+            f"Outbreak Detection Results ({result['period']})",
+            f"Analyzed {result['data_points']} data points | Threshold: {threshold_sigma}σ",
+            f"Found {result['total']} anomaly(ies):\n",
+        ]
+
+        for a in result["anomalies"][:10]:
+            sign = "+" if a["direction"] == "spike" else "-"
+            lines.append(
+                f"  • {a['date']}: {a['actual']} cases "
+                f"(expected {a['expected']}, {sign}{abs(a['deviation'])}, "
+                f"z={a['z_score']})"
+            )
+
+        if result["total"] > 10:
+            lines.append(f"\n... and {result['total'] - 10} more anomalies")
+
+        if result.get("warnings"):
+            lines.append("\n⚠️ " + result["warnings"][0])
+
+        lines.append("\nUse create_visualization with anomaly_data to plot these outbreaks.")
+
+        return "\n".join(lines)
+
+    except ForecastError as e:
+        return f"Outbreak Detection Error: {e}"
+    except Exception as e:
+        return f"Unexpected error: {e}"
+
+
+@tool
+def detect_geographic_outliers(
+    sql: str,
+    sensitivity: float = 1.5,
+) -> str:
+    """
+    Detect outlier districts/age groups/categories using IQR method.
+
+    IMPORTANT: SQL MUST return exactly these column aliases:
+    1. 'category' (TEXT)
+    2. 'value' (INT)
+
+    Example:
+    SELECT district as category, COUNT(*) as value FROM patients GROUP BY district
+
+    sensitivity: IQR multiplier (1.0=loose, 1.5=moderate, 2.0=strict)
+    """
+    global _last_anomaly_data
+    from backend.anomaly_detection import detect_spatial_anomalies
+    from backend.forecast_trend import ForecastError
+
+    df, err = _db.execute(sql)
+    if err:
+        return f"SQL Error: {err}"
+    if df is None or df.empty:
+        return "No data for outlier detection"
+
+    try:
+        result = detect_spatial_anomalies(
+            df=df,
+            multiplier=sensitivity,
+        )
+
+        _last_anomaly_data = result
+
+        if result["total"] == 0:
+            msg = (
+                f"No outliers detected among {result['total_categories']} categories\n"
+                f"Baseline stats: median={result['baseline_median']}, "
+                f"Q1={result['baseline_q1']}, Q3={result['baseline_q3']}\n"
+                f"Data distribution appears normal."
+            )
+        else:
+            msg = (
+                f"Geographic Outlier Detection ({result['total_categories']} categories analyzed)\n"
+                f"Method: IQR with {sensitivity}x multiplier\n"
+                f"Baseline: median={result['baseline_median']}, "
+                f"Q1={result['baseline_q1']}, Q3={result['baseline_q3']}\n"
+                f"Found {result['total']} outlier(s):\n\n"
+            )
+            # I'm showing off a bit, but it might look really good.
+            for anomaly in result["anomalies"]:
+                icon = {"CRITICAL": "🔴", "HIGH": "🟠", "MODERATE": "🟡", "LOW": "⚪"}.get(anomaly["severity"], "⚪")
+
+                arrow = "↑" if anomaly["direction"] == "above" else "↓"
+
+                msg += (
+                    f"{icon} {anomaly['category']}: {anomaly['value']} "
+                    f"(median={anomaly['median']}, {arrow}{abs(anomaly['deviation']):.0f}, "
+                    f"+{anomaly['relative_deviation']}%, {anomaly['severity']})\n"
+                )
+
+        if result.get("warnings"):
+            msg += "\n⚠️ " + "\n".join(result["warnings"][:2])
+
+        if result["total"] > 0:
+            msg += "\nUse create_visualization with anomaly_data to plot these outliers."
+
+        return msg
+
+    except ForecastError as e:
+        return f"Error: {e}"
+    except Exception as e:
+        return f"Unexpected error: {e}"
+
+
+"""
+@tool
+def detect_frequency_anomalies(sql: str) -> str:
+    docstring
+    Detect items with anomalous frequencies (over/underrepresented).
+
+    SQL must return: 'item' (TEXT), 'count' (INT).
+    Needs 10+ items. Use for diagnosis/drug frequency analysis.
+
+    Example SQL:
+        SELECT diagnosis_code as item, COUNT(*) as count
+        FROM prescriptions
+        GROUP BY diagnosis_code
+    docstring
+
+    global _last_anomaly_data
+
+    # TODO: Implementation
+    pass
+"""
+
+TOOLS = [
+    search_codes,
+    run_sql,
+    forecast_trend,
+    create_visualization,
+    detect_outbreak,
+    detect_geographic_outliers,
+    # detect_frequency_anomalies,
+]

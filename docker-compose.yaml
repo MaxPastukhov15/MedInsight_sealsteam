@@ -22,14 +22,28 @@ services:
       - "8000:8000"
 
     environment:
-      # Example environment variable, adjust as needed
       FRONTEND_URL: http://localhost:80
+      REDIS_URL: redis://cache:6379/0
 
     volumes:
       - ./data:/app/data
 
+    depends_on:
+      - cache
+
     networks:
       - medinsight-net
+
+  cache:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - medinsight-net
+
+volumes:
+  redis-data:
 
 networks:
   medinsight-net:
