@@ -1,6 +1,9 @@
+import redis
+import hashlib
 import os
 import duckdb
 import pandas as pd
+import io
 from typing import Tuple, Optional, List, Any
 from backend.config import log
 
@@ -9,6 +12,10 @@ class Database:
     def __init__(self, data_dir: str = "data"):
         self.conn = duckdb.connect(":memory:")
         self.data_dir = data_dir
+
+        redis_url = os.getenv("REDIS_URL", "redis://cache:6379/0")
+        self.cache = redis.from_url(redis_url)
+
         self._init_db()
 
     def _init_db(self):
@@ -61,12 +68,29 @@ class Database:
         forbidden = ["DROP", "DELETE", "UPDATE", "INSERT", "ALTER", "TRUNCATE"]
         if any(w in sql.upper() for w in forbidden):
             return None, "Security Violation: Read-only access permitted."
+        
+        hash_input = f"{sql}_{params}"
+        cache_key = f"sql:{hashlib.md5(hash_input.encode()).hexdigest()}" 
 
         try:
+            cached_data = self.cache.get(cache_key)
+            if cached_data:
+                log("CACHE", f"Hit: {cache_key[:8]}...", "C")
+
+                return pd.read_parquet(io.BytesIO(cached_data)), None
+
+
             if params:
                 df = self.conn.execute(sql, params).df()
             else:
                 df = self.conn.execute(sql).df()
+            
+            if df.empty:
+                buffer = io.BytesIO()
+                df.to_parquet(buffer, index=False)
+                self.cache.setex(cache_key, 3600, buffer.getvalue())
+
             return df, None
+        
         except Exception as e:
             return None, str(e)
