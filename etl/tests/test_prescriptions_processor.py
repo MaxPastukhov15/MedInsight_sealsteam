@@ -62,6 +62,7 @@ def test_validate_structure_fail():
     assert row_4["drug_id"] == "None"
 '''
 
+
 def test_clean_text_formatting():
     """Text formatting check (upper, strip)."""
     proc = PrescriptionsProcessor("dummy.csv")
